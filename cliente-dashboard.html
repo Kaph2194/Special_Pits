@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Portal - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+             Dashboard Cliente
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+        .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .vehiculo-card {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08); margin-bottom:1rem;
+            cursor:pointer; transition:all .3s;
+        }
+        .vehiculo-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+        .timeline-item {
+            position:relative; padding-left:3rem; margin-bottom:1.5rem;
+        }
+        .timeline-item::before {
+            content:''; position:absolute; left:12px; top:0; bottom:-1.5rem;
+            width:2px; background:var(--gray-300);
+        }
+        .timeline-item:last-child::before { display:none; }
+        .timeline-icon {
+            position:absolute; left:0; width:30px; height:30px;
+            border-radius:50%; background:white; border:3px solid var(--primary);
+            display:flex; align-items:center; justify-content:center;
+            font-size:.875rem; z-index:1;
+        }
+        .timeline-content {
+            background:white; padding:1rem; border-radius:.5rem;
+            box-shadow:0 2px 4px rgba(0,0,0,.08);
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div style="text-align:center; margin-bottom:2rem;">
+            <div style="font-size:2rem;">🚗</div>
+            <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+            <small style="color:rgba(255,255,255,.6);">Mi Portal</small>
+        </div>
+        <nav>
+            <a href="#" class="active" onclick="cambiarSeccion('vehiculos',this)">🚗 Mis Vehículos</a>
+            <a href="#" onclick="cambiarSeccion('ots',this)">🔧 Mis OTs</a>
+            <a href="#" onclick="cambiarSeccion('facturas',this)">💰 Facturas</a>
+            <a href="#" onclick="cambiarSeccion('cotizaciones',this)">📋 Cotizaciones</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p id="nombreUsuario">...</p>
+            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
+            🚪 Salir
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- MIS VEHÍCULOS -->
+        <section id="vehiculos" class="section active">
+            <h1>🚗 Mis Vehículos</h1>
+            <div id="listaVehiculos"></div>
+        </section>
+
+        <!-- MIS OTs -->
+        <section id="ots" class="section">
+            <h1>🔧 Mis Órdenes de Trabajo</h1>
+            <div class="card" style="margin-bottom:1rem;">
+                <select id="filtroVehiculoOT" class="form-control" onchange="filtrarOTs()">
+                    <option value="">Todos los vehículos</option>
+                </select>
+            </div>
+            <div id="listaOTs"></div>
+        </section>
+
+        <!-- FACTURAS -->
+        <section id="facturas" class="section">
+            <h1>💰 Mis Facturas</h1>
+            <div id="listaFacturas"></div>
+        </section>
+
+        <!-- COTIZACIONES -->
+        <section id="cotizaciones" class="section">
+            <h1>📋 Mis Cotizaciones</h1>
+            <div id="listaCotizaciones"></div>
+        </section>
+    </main>
+</div>
+
+<!-- MODAL DETALLE VEHÍCULO -->
+<div class="modal" id="modalVehiculo">
+    <div class="modal-content" style="max-width:800px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+            <h2 id="tituloVehiculo">Detalle del Vehículo</h2>
+            <button onclick="cerrarModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>
+        </div>
+        <div id="detalleVehiculo"></div>
+        <div id="historialVehiculo"></div>
+    </div>
+</div>
+
+<script type="module" src="js/cliente-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Caja - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+             Dashboard Caja
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+        .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .metrics { 
+            display:grid; 
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); 
+            gap:1rem; 
+            margin-bottom:2rem; 
+        }
+        .metric {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            border-left:4px solid var(--primary);
+        }
+        .metric.success { border-left-color:var(--success); }
+        .metric.warning { border-left-color:var(--warning); }
+        .metric-value { font-size:2rem; font-weight:700; color:var(--primary); }
+        .metric.success .metric-value { color:var(--success); }
+        .metric.warning .metric-value { color:var(--warning); }
+        .metric-label { color:var(--gray-700); font-size:.875rem; margin-top:.25rem; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div style="text-align:center; margin-bottom:2rem;">
+            <div style="font-size:2rem;">💰</div>
+            <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+            <small style="color:rgba(255,255,255,.6);" id="rolUsuario">Cajero</small>
+        </div>
+        <nav>
+            <a href="#" class="active" onclick="cambiarSeccion('dashboard',this)">📊 Dashboard</a>
+            <a href="#" onclick="cambiarSeccion('ots_pendientes',this)">🔧 OTs por Facturar</a>
+            <a href="#" onclick="cambiarSeccion('facturas',this)">📄 Facturas</a>
+            <a href="#" onclick="cambiarSeccion('cierre_caja',this)">📊 Cierre de Caja</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p id="nombreUsuario">...</p>
+            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
+            🚪 Salir
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h1>💰 Dashboard de Caja</h1>
+            
+            <div class="metrics">
+                <div class="metric warning">
+                    <div class="metric-value" id="otsPendientesFacturar">-</div>
+                    <div class="metric-label">🔧 OTs por Facturar</div>
+                </div>
+                <div class="metric success">
+                    <div class="metric-value" id="facturasHoy">-</div>
+                    <div class="metric-label">📄 Facturas Hoy</div>
+                </div>
+                <div class="metric success">
+                    <div class="metric-value" id="totalFacturadoHoy">$0</div>
+                    <div class="metric-label">💵 Facturado Hoy</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="totalMes">$0</div>
+                    <div class="metric-label">📊 Total del Mes</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚠️ OTs Completadas - Pendientes de Facturación</h2>
+                <div id="alertasOTsCompletadas"></div>
+            </div>
+        </section>
+
+        <!-- OTS POR FACTURAR -->
+        <section id="ots_pendientes" class="section">
+            <h1>🔧 Órdenes de Trabajo por Facturar</h1>
+            <div id="listaOTsPendientes"></div>
+        </section>
+
+        <!-- FACTURAS -->
+        <section id="facturas" class="section">
+            <h1>📄 Facturas Generadas</h1>
+            <div class="card" style="margin-bottom:1rem;">
+                <div style="display:flex;gap:1rem;">
+                    <input type="date" id="fechaDesde" class="form-control">
+                    <input type="date" id="fechaHasta" class="form-control">
+                    <button onclick="filtrarFacturas()" class="btn btn-primary">Filtrar</button>
+                </div>
+            </div>
+            <div id="tablaFacturas"></div>
+        </section>
+
+        <!-- CIERRE DE CAJA -->
+        <section id="cierre_caja" class="section">
+            <h1>📊 Cierre de Caja</h1>
+            <div class="card">
+                <h3>Resumen del Día</h3>
+                <div id="resumenCierre"></div>
+                <button onclick="generarCierreCaja()" class="btn btn-primary" style="margin-top:1rem;">
+                    📥 Generar Cierre
+                </button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script type="module" src="js/caja-dashboard.js"></script>
+</body>
+</html>

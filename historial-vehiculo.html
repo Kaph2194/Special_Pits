@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial del Vehículo - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-300);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 100px;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 35px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            z-index: 1;
+        }
+
+        .timeline-icon.cotizacion {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .timeline-icon.inspeccion {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .timeline-icon.ot {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .timeline-date {
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--gray-700);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ← Volver
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>📋 Historial del Vehículo</h1>
+
+        <!-- INFORMACIÓN DEL VEHÍCULO -->
+        <div class="card">
+            <div id="infoVehiculo">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS -->
+        <div class="stats-grid" id="statsGrid">
+            <!-- Se llenará dinámicamente -->
+        </div>
+
+        <!-- LÍNEA DE TIEMPO -->
+        <div class="card">
+            <h2>📅 Línea de Tiempo</h2>
+            <div class="timeline" id="timeline">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/historial-vehiculo.js"></script>
+</body>
+</html>

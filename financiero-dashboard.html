@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financiero - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+             Dashboard Financiero
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+        .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .kpi-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:1.5rem; margin-bottom:2rem;
+        }
+        .kpi-card {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            border-left:4px solid var(--primary);
+        }
+        .kpi-value { font-size:2.5rem; font-weight:700; color:var(--primary); margin:.5rem 0; }
+        .kpi-label { color:var(--gray-700); font-size:.875rem; }
+        .kpi-change {
+            font-size:.875rem; margin-top:.5rem;
+            display:flex; align-items:center; gap:.25rem;
+        }
+        .kpi-change.positive { color:var(--success); }
+        .kpi-change.negative { color:var(--danger); }
+        .chart-container { background:white; padding:1.5rem; border-radius:.75rem; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div style="text-align:center; margin-bottom:2rem;">
+            <div style="font-size:2rem;">📊</div>
+            <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+            <small style="color:rgba(255,255,255,.6);">Dashboard Financiero</small>
+        </div>
+        <nav>
+            <a href="#" class="active" onclick="cambiarSeccion('dashboard',this)">📊 KPIs</a>
+            <a href="#" onclick="cambiarSeccion('ingresos',this)">💰 Ingresos</a>
+            <a href="#" onclick="cambiarSeccion('costos',this)">📉 Costos</a>
+            <a href="#" onclick="cambiarSeccion('utilidad',this)">💹 Utilidad</a>
+            <a href="#" onclick="cambiarSeccion('inventario',this)">📦 Valor Inventario</a>
+            <a href="#" onclick="cambiarSeccion('facturas',this)">📄 Facturas SIIGO</a>
+            <a href="#" onclick="cambiarSeccion('cxp',this)">💳 Cuentas por Pagar</a>
+            <a href="cuentas-por-pagar.html" target="_blank">💳 Gestión Completa CxP</a>
+            <a href="proveedores.html" target="_blank">📦 Proveedores</a>
+        </nav>
+        <div class="sidebar-footer">
+            <p id="nombreUsuario">...</p>
+            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
+            🚪 Salir
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h1>📊 Indicadores Financieros Clave</h1>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">💰 Ingresos del Mes</div>
+                    <div class="kpi-value" id="ingresosMes">$0</div>
+                    <div class="kpi-change positive" id="cambioIngresos">
+                        <span>↗</span> vs mes anterior
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">📉 Costos del Mes</div>
+                    <div class="kpi-value" id="costosMes">$0</div>
+                    <div class="kpi-change" id="cambioCostos"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">💹 Utilidad Bruta</div>
+                    <div class="kpi-value" id="utilidadMes">$0</div>
+                    <div class="kpi-change positive" id="margenUtilidad">
+                        Margen: 0%
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">🔧 OTs Completadas</div>
+                    <div class="kpi-value" id="otsCompletadas">0</div>
+                    <div class="kpi-change" id="ticketPromedio">
+                        Ticket promedio: $0
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">📦 Valor Inventario</div>
+                    <div class="kpi-value" id="valorInventario">$0</div>
+                    <div class="kpi-change">
+                        En stock actual
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">📄 Facturas Emitidas</div>
+                    <div class="kpi-value" id="totalFacturas">0</div>
+                    <div class="kpi-change" id="promedioFactura">
+                        Promedio: $0
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;">
+            <div class="chart-container">
+            <h3>📈 Ingresos vs Costos (Últimos 6 meses)</h3>
+            <div style="height:300px;">
+            <canvas id="canvasIngresosCostos"></canvas>
+            </div>
+            </div>
+            <div class="chart-container">
+            <h3>💹 Utilidad Mensual</h3>
+            <div style="height:300px;">
+            <canvas id="canvasUtilidad"></canvas>
+            </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- INGRESOS -->
+        <section id="ingresos" class="section">
+            <h1>💰 Detalle de Ingresos</h1>
+            <div id="tablaIngresos"></div>
+        </section>
+
+        <!-- COSTOS -->
+        <section id="costos" class="section">
+            <h1>📉 Detalle de Costos</h1>
+            <div id="tablaCostos"></div>
+        </section>
+
+        <!-- UTILIDAD -->
+        <section id="utilidad" class="section">
+            <h1>💹 Análisis de Utilidad</h1>
+            <div id="tablaUtilidad"></div>
+        </section>
+
+        <!-- INVENTARIO -->
+        <section id="inventario" class="section">
+            <h1>📦 Valor del Inventario</h1>
+            <div id="tablaInventario"></div>
+        </section>
+
+        <!-- FACTURAS -->
+        <section id="facturas" class="section">
+            <h1>📄 Facturas SIIGO</h1>
+            <div id="tablaFacturas"></div>
+        </section>
+        <!-- CUENTAS POR PAGAR -->
+        <section id="cxp" class="section">
+            <h1>💳 Cuentas por Pagar a Proveedores</h1>
+    
+            <div class="kpi-grid">
+            <div class="kpi-card">
+            <div class="kpi-label">💰 Deuda Total</div>
+            <div class="kpi-value" id="fin_deuda_total">$0</div>
+            </div>
+            <div class="kpi-card">
+            <div class="kpi-label">⚠️ Vencidas</div>
+            <div class="kpi-value" style="color:var(--danger);" id="fin_deuda_vencida">$0</div>
+            </div>
+            <div class="kpi-card">
+            <div class="kpi-label">📊 Pagado Este Mes</div>
+            <div class="kpi-value" style="color:var(--success);" id="fin_pagado_mes">$0</div>
+            </div>
+            </div>
+
+            <div id="tablaCXPFinanciero"></div>
+        </section>
+
+    </main>
+</div>
+<!-- ANTES DEL CIERRE DE </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script type="module" src="js/financiero-dashboard.js"></script>
+</body>
+</html>

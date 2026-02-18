@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuentas por Pagar - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .cxp-vencida { background:#fee2e2; }
+        .cxp-proxima { background:#fef3c7; }
+        .upload-area {
+            border:2px dashed var(--gray-300);
+            border-radius:.5rem;
+            padding:2rem;
+            text-align:center;
+            cursor:pointer;
+            transition:all .3s;
+        }
+        .upload-area:hover { border-color:var(--primary); background:var(--gray-50); }
+        .upload-area.dragging { border-color:var(--primary); background:#dbeafe; }
+        .file-preview {
+            max-width:100%;
+            max-height:400px;
+            margin:1rem 0;
+            border-radius:.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car - Cuentas por Pagar</div>
+            <nav>
+                <button onclick="history.back()" class="btn btn-secondary">← Volver</button>
+                <button onclick="location.href='proveedores.html'" class="btn btn-secondary">
+                    📦 Proveedores
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <h1>💰 Cuentas por Pagar</h1>
+            <button onclick="abrirModalCXP()" class="btn btn-primary">
+                + Nueva Cuenta por Pagar
+            </button>
+        </div>
+
+        <!-- Resumen -->
+        <div class="metrics" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
+            <div class="card" style="padding:1.5rem;border-left:4px solid var(--danger);">
+                <div style="font-size:2rem;font-weight:700;color:var(--danger);" id="totalPendiente">$0</div>
+                <div style="color:var(--gray-700);font-size:.875rem;">Total Pendiente</div>
+            </div>
+            <div class="card" style="padding:1.5rem;border-left:4px solid var(--warning);">
+                <div style="font-size:2rem;font-weight:700;color:var(--warning);" id="totalVencido">$0</div>
+                <div style="color:var(--gray-700);font-size:.875rem;">Vencido</div>
+            </div>
+            <div class="card" style="padding:1.5rem;border-left:4px solid var(--success);">
+                <div style="font-size:2rem;font-weight:700;color:var(--success);" id="totalPagado">$0</div>
+                <div style="color:var(--gray-700);font-size:.875rem;">Pagado Este Mes</div>
+            </div>
+            <div class="card" style="padding:1.5rem;border-left:4px solid var(--primary);">
+                <div style="font-size:2rem;font-weight:700;color:var(--primary);" id="totalFacturas">0</div>
+                <div style="color:var(--gray-700);font-size:.875rem;">Facturas Activas</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card" style="margin-bottom:1rem;">
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <input type="text" id="buscarCXP" class="form-control"
+                       placeholder="Buscar por factura, proveedor..."
+                       oninput="filtrarCXP()" style="flex:1;min-width:200px;">
+                <select id="filtroEstado" class="form-control" onchange="filtrarCXP()">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="parcial">Parcial</option>
+                    <option value="pagada">Pagada</option>
+                    <option value="vencida">Vencida</option>
+                </select>
+                <select id="filtroProveedor" class="form-control" onchange="filtrarCXP()">
+                    <option value="">Todos los proveedores</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="tablaCXP"></div>
+    </div>
+
+    <!-- MODAL NUEVA CXP -->
+    <div class="modal" id="modalCXP">
+        <div class="modal-content" style="max-width:900px;">
+            <h2>Nueva Cuenta por Pagar</h2>
+            <form id="formCXP">
+                <div class="form-group">
+                    <label>Proveedor *</label>
+                    <select id="cxpProveedor" class="form-control" required>
+                        <option value="">Seleccionar proveedor...</option>
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Número de Factura *</label>
+                        <input type="text" id="cxpNumFactura" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Factura *</label>
+                        <input type="date" id="cxpFechaFactura" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha Vencimiento *</label>
+                        <input type="date" id="cxpFechaVencimiento" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Concepto</label>
+                        <input type="text" id="cxpConcepto" class="form-control" 
+                               placeholder="Ej: Compra de repuestos">
+                    </div>
+                </div>
+
+                <h3>Montos</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Subtotal *</label>
+                        <input type="number" id="cxpSubtotal" class="form-control" 
+                               step="0.01" min="0" required oninput="calcularTotalCXP()">
+                    </div>
+                    <div class="form-group">
+                        <label>IVA (19%)</label>
+                        <input type="number" id="cxpIVA" class="form-control" 
+                               step="0.01" min="0" oninput="calcularTotalCXP()">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Retención en la Fuente</label>
+                        <input type="number" id="cxpRetefuente" class="form-control" 
+                               step="0.01" min="0" value="0" oninput="calcularTotalCXP()">
+                    </div>
+                    <div class="form-group">
+                        <label>ReteICA</label>
+                        <input type="number" id="cxpReteica" class="form-control" 
+                               step="0.01" min="0" value="0" oninput="calcularTotalCXP()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:1.25rem;font-weight:700;">Total a Pagar</label>
+                    <input type="number" id="cxpTotal" class="form-control" 
+                           style="font-size:1.5rem;font-weight:700;" readonly>
+                </div>
+
+                <h3>Archivo de Factura</h3>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="archivoFactura" accept="application/pdf,image/*" 
+                           style="display:none;" onchange="previsualizarArchivo(this)">
+                    <p style="margin:0;">
+                        📁 Arrastra el archivo aquí o haz click para seleccionar<br>
+                        <small style="color:var(--gray-700);">PDF, JPG o PNG - Máx 10MB</small>
+                    </p>
+                </div>
+                <div id="previewArea"></div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="cxpObservaciones" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        💾 Guardar Cuenta por Pagar
+                    </button>
+                    <button type="button" onclick="cerrarModalCXP()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PAGAR -->
+    <div class="modal" id="modalPagar">
+        <div class="modal-content" style="max-width:700px;">
+            <h2>Registrar Pago</h2>
+            <div id="infoCXP" style="background:var(--gray-50);padding:1rem;border-radius:.5rem;margin-bottom:1rem;"></div>
+            <form id="formPago">
+                <input type="hidden" id="pagoCXPId">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha de Pago *</label>
+                        <input type="date" id="pagoFecha" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Monto del Pago *</label>
+                        <input type="number" id="pagoMonto" class="form-control" 
+                               step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Método de Pago *</label>
+                        <select id="pagoMetodo" class="form-control" required>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="efectivo">Efectivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Referencia</label>
+                        <input type="text" id="pagoReferencia" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Banco Origen</label>
+                    <input type="text" id="pagoBancoOrigen" class="form-control">
+                </div>
+
+                <h3>Comprobante de Pago</h3>
+                <div class="upload-area" id="uploadAreaPago">
+                    <input type="file" id="archivoComprobante" accept="application/pdf,image/*" 
+                           style="display:none;" onchange="previsualizarComprobante(this)">
+                    <p style="margin:0;">
+                        📁 Arrastra el comprobante aquí<br>
+                        <small style="color:var(--gray-700);">PDF, JPG o PNG</small>
+                    </p>
+                </div>
+                <div id="previewAreaPago"></div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="pagoObservaciones" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-success" style="flex:1;">
+                        💳 Registrar Pago
+                    </button>
+                    <button type="button" onclick="cerrarModalPagar()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/cuentas-por-pagar.js"></script>
+</body>
+</html>

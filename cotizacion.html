@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Cotización - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .search-item:hover {
+            background-color: var(--gray-50);
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .items-container {
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            background: var(--gray-50);
+        }
+
+        .item-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .item-actions input {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.25rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-blue {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-green {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-orange {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .totales-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .totales-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ← Volver al Dashboard
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">📝 Nueva Cotización</h1>
+            </div>
+
+            <!-- SECCIÓN 1: INFORMACIÓN DEL CLIENTE -->
+            <div class="card" style="background: var(--gray-50);">
+                <h3 style="margin-bottom: 1rem;">👤 Información del Cliente</h3>
+                
+                <div class="form-row">
+                    <div class="form-group search-box">
+                        <label for="buscarCliente">Buscar Cliente</label>
+                        <input type="text" id="buscarCliente" class="form-control" 
+                               placeholder="Buscar por nombre, NIT o cuenta...">
+                        <div id="resultadosCliente" class="search-results"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cliente Seleccionado</label>
+                        <div id="clienteSeleccionado" style="padding: 0.75rem; background: white; border: 1px solid var(--gray-200); border-radius: 0.5rem; min-height: 50px;">
+                            <em style="color: var(--gray-700);">Ningún cliente seleccionado</em>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="mostrarModalNuevoCliente()" class="btn btn-secondary" style="width: auto;">
+                    + Crear Nuevo Cliente
+                </button>
+            </div>
+
+            <!-- SECCIÓN 2: INFORMACIÓN DEL VEHÍCULO -->
+            <div class="card" style="background: var(--gray-50);">
+                <h3 style="margin-bottom: 1rem;">🚗 Información del Vehículo</h3>
+                
+                <div class="form-row">
+                    <div class="form-group search-box">
+                        <label for="buscarVehiculo">Buscar Vehículo</label>
+                        <input type="text" id="buscarVehiculo" class="form-control" 
+                               placeholder="Buscar por placa...">
+                        <div id="resultadosVehiculo" class="search-results"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Vehículo Seleccionado</label>
+                        <div id="vehiculoSeleccionado" style="padding: 0.75rem; background: white; border: 1px solid var(--gray-200); border-radius: 0.5rem; min-height: 50px;">
+                            <em style="color: var(--gray-700);">Ningún vehículo seleccionado</em>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="mostrarModalNuevoVehiculo()" class="btn btn-secondary" style="width: auto;">
+                    + Registrar Nuevo Vehículo
+                </button>
+            </div>
+
+            <!-- SECCIÓN 3: SERVICIOS -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">🔧 Servicios</h3>
+                
+                <div class="form-group search-box">
+                    <input type="text" id="buscarServicio" class="form-control" 
+                           placeholder="Buscar servicio...">
+                    <div id="resultadosServicio" class="search-results"></div>
+                </div>
+
+                <div id="listaServicios" class="items-container" style="display: none;">
+                    <h4 style="margin-bottom: 1rem;">Servicios Agregados:</h4>
+                    <div id="serviciosAgregados"></div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 4: REPUESTOS -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">🔩 Repuestos</h3>
+                
+                <div class="form-group search-box">
+                    <input type="text" id="buscarRepuesto" class="form-control" 
+                           placeholder="Buscar repuesto...">
+                    <div id="resultadosRepuesto" class="search-results"></div>
+                </div>
+
+                <div id="listaRepuestos" class="items-container" style="display: none;">
+                    <h4 style="margin-bottom: 1rem;">Repuestos Agregados:</h4>
+                    <div id="repuestosAgregados"></div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 5: MANO DE OBRA -->
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">👷 Mano de Obra</h3>
+                
+                <div class="form-group search-box">
+                    <input type="text" id="buscarManoObra" class="form-control" 
+                           placeholder="Buscar mano de obra...">
+                    <div id="resultadosManoObra" class="search-results"></div>
+                </div>
+
+                <div id="listaManoObra" class="items-container" style="display: none;">
+                    <h4 style="margin-bottom: 1rem;">Mano de Obra Agregada:</h4>
+                    <div id="manoObraAgregada"></div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 6: TOTALES -->
+            <div class="card" style="background: var(--gray-100);">
+                <div class="totales-grid">
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">💰 Resumen</h3>
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <strong id="subtotal">$0</strong>
+                        </div>
+                        <div class="total-row">
+                            <span>IVA (19%):</span>
+                            <strong id="iva">$0</strong>
+                        </div>
+                        <div class="total-row final">
+                            <span>TOTAL:</span>
+                            <strong id="total">$0</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">📄 Total en Letras</h3>
+                        <p id="totalLetras" style="font-size: 0.9rem; color: var(--gray-700); line-height: 1.6;">
+                            CERO PESOS M/CTE
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="btn-group">
+                <button onclick="guardarCotizacion()" class="btn btn-success" id="btnGuardar">
+                    💾 Guardar Cotización
+                </button>
+                <button onclick="generarPDF()" class="btn btn-primary" id="btnPDF" disabled>
+                    📄 Generar PDF
+                </button>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script type="module" src="js/cotizacion.js"></script>
+    <script type="module" src="js/pdf-generator.js"></script>
+</body>
+</html>

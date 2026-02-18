@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Taller - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="location.href='cotizacion.html'" class="btn btn-primary">
+                    + Nueva Cotización
+                </button>Cra. 70c # 49-50, BogotáCRA 70c #50r 73 sur
+                <button onclick="cerrarSesion()" class="btn btn-secondary">
+                    Cerrar Sesión
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Dashboard</h1>
+        
+        <div class="grid grid-3" style="margin-bottom: 2rem;">
+            <div class="card" style="text-align: center;">
+                <h3 style="color: var(--primary);">Cotizaciones Hoy</h3>
+                <p style="font-size: 2rem; font-weight: bold; margin-top: 0.5rem;" id="cotizacionesHoy">0</p>
+            </div>
+            <div class="card" style="text-align: center;">
+                <h3 style="color: var(--success);">OTs Activas</h3>
+                <p style="font-size: 2rem; font-weight: bold; margin-top: 0.5rem;" id="otsActivas">0</p>
+            </div>
+            <div class="card" style="text-align: center;">
+                <h3 style="color: var(--warning);">Pendientes</h3>
+                <p style="font-size: 2rem; font-weight: bold; margin-top: 0.5rem;" id="pendientes">0</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Cotizaciones Recientes</h2>
+            </div>
+            
+            <div id="loadingCotizaciones" style="text-align: center; padding: 2rem;">
+                <span class="loading"></span> Cargando...
+            </div>
+
+            <div id="tablaCotizaciones" style="display: none;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Folio</th>
+                            <th>Cliente</th>
+                            <th>Vehículo</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaCotizaciones">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-config.js';
+
+        // Verificar sesión
+        checkAuth();
+
+        async function checkAuth() {
+            const usuario = localStorage.getItem('usuario');
+            if (!usuario) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            cargarDashboard();
+        }
+
+        async function cargarDashboard() {
+            try {
+                // Cargar estadísticas
+                await cargarEstadisticas();
+                
+                // Cargar cotizaciones recientes
+                await cargarCotizacionesRecientes();
+                
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+            }
+        }
+
+        async function cargarEstadisticas() {
+            // Cotizaciones de hoy
+            const hoy = new Date().toISOString().split('T')[0];
+            const { count: countHoy } = await supabase
+                .from('cotizaciones')
+                .select('*', { count: 'exact', head: true })
+                .gte('fecha_cotizacion', hoy);
+            
+            document.getElementById('cotizacionesHoy').textContent = countHoy || 0;
+
+            // OTs activas
+            const { count: countOTs } = await supabase
+                .from('ordenes_trabajo')
+                .select('*', { count: 'exact', head: true })
+                .in('estado', ['asignada', 'en_proceso']);
+            
+            document.getElementById('otsActivas').textContent = countOTs || 0;
+
+            // Cotizaciones pendientes
+            const { count: countPendientes } = await supabase
+                .from('cotizaciones')
+                .select('*', { count: 'exact', head: true })
+                .eq('estado', 'pendiente');
+            
+            document.getElementById('pendientes').textContent = countPendientes || 0;
+        }
+
+        async function cargarCotizacionesRecientes() {
+            const { data, error } = await supabase
+                .from('v_cotizaciones_completas')
+                .select('*')
+                .order('fecha_cotizacion', { ascending: false })
+                .limit(10);
+
+            if (error) {
+                console.error('Error:', error);
+                return;
+            }
+
+            const tbody = document.getElementById('listaCotizaciones');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray-700);">
+                            No hay cotizaciones registradas
+                        </td>
+                    </tr>
+                `;
+            } else {
+                data.forEach(cot => {
+                    const fecha = new Date(cot.fecha_cotizacion).toLocaleDateString('es-CO');
+                    const total = new Intl.NumberFormat('es-CO', { 
+                        style: 'currency', 
+                        currency: 'COP',
+                        minimumFractionDigits: 0
+                    }).format(cot.total);
+
+                    const estadoBadge = getEstadoBadge(cot.estado);
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${cot.folio}</strong></td>
+                            <td>${cot.cliente_nombre || 'N/A'}</td>
+                            <td>${cot.vehiculo_placa || 'N/A'}</td>
+                            <td>${fecha}</td>
+                            <td>${total}</td>
+                            <td>${estadoBadge}</td>
+                            <td>
+                                <button onclick="verCotizacion(${cot.id})" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Ver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('loadingCotizaciones').style.display = 'none';
+            document.getElementById('tablaCotizaciones').style.display = 'block';
+        }
+
+        function getEstadoBadge(estado) {
+            const badges = {
+                'pendiente': '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem;">Pendiente</span>',
+                'aprobada': '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem;">Aprobada</span>',
+                'rechazada': '<span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.875rem;">Rechazada</span>'
+            };
+            return badges[estado] || estado;
+        }
+
+        window.verCotizacion = function(id) {
+            window.location.href = `cotizacion.html?id=${id}`;
+        }
+
+        window.cerrarSesion = function() {
+            localStorage.removeItem('usuario');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

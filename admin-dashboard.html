@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SuperAdmin - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:rgb(29, 3, 145);box-shadow:0 2px 4px rgb(243, 243, 243);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:rgb(243, 243, 243);">
+             Dashboard
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { 
+            display: grid; 
+            grid-template-columns: 240px 1fr; 
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar { 
+            background: var(--gray-900); 
+            color: white; 
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow-y: auto;
+        }
+        .sidebar nav a {
+            display: flex; 
+            align-items: center; 
+            gap: .75rem;
+            padding: .75rem 1rem; 
+            color: rgba(255,255,255,.7);
+            text-decoration: none; 
+            border-radius: .5rem; 
+            margin-bottom: .25rem;
+            transition: all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background: rgba(255,255,255,.1); 
+            color: white;
+        }
+        .main { 
+            background: var(--gray-50); 
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        .section { 
+            display: none; 
+        }
+        .section.active { 
+            display: block; 
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .metric {
+            background: white;
+            padding: 1.5rem;
+            border-radius: .75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            border-left: 4px solid var(--primary);
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: .5rem 0;
+        }
+        .metric-label {
+            color: var(--gray-700);
+            font-size: .875rem;
+        }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,.1);
+            padding: 1rem;
+            border-radius: .5rem;
+        }
+        .sidebar nav {
+            margin-bottom: 100px;
+        }
+        .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 9999;
+                align-items: center;
+                justify-content: center;
+        }
+
+        .modal.active {
+                display: flex;
+        }
+
+        .modal-content {
+                background: white;
+                padding: 2rem;
+                border-radius: 1rem;
+                max-width: 600px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-content h2 {
+                margin-top: 0;
+         }
+        #actividadReciente::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+        #actividadReciente::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: 4px;
+        }
+        
+        #actividadReciente::-webkit-scrollbar-thumb {
+            background: var(--gray-400);
+            border-radius: 4px;
+        }
+        
+        #actividadReciente::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-500);
+        }
+        
+        /* Animación de carga */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .metric-value:empty::after {
+            content: '...';
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        /* Badges más pequeños */
+        .badge {
+            display: inline-block;
+            padding: .25rem .5rem;
+            border-radius: .25rem;
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .badge-success, .badge-green {
+            background: var(--success);
+            color: white;
+        }
+        
+        .badge-warning, .badge-orange {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .badge-blue {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .badge-gray {
+            background: var(--gray-400);
+            color: white;
+        }
+        .badge-purple {
+            background: #8b5cf6;
+            color: white;
+        }   
+        .badge-teal {
+            background: #14b8a6;
+            color: white;
+        }
+        .badge-pink {
+            background: #ec4899;
+            color: white;
+        }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .card {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08); margin-bottom:1.5rem;
+        }
+         .kpi-card {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:center;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <div style="font-size:2rem;">⚙️</div>
+                <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+                <small style="color:rgba(255,255,255,.6);" id="rolUsuario">SuperAdmin</small>
+            </div>
+            
+            <nav>
+                <a href="#" class="active" onclick="cambiarSeccion('dashboard',this);return false;">
+                    📊 Dashboard
+                </a>
+                <a href="#" onclick="cambiarSeccion('usuarios',this);return false;">
+                    👥 Usuarios
+                </a>
+                <a href="#" onclick="cambiarSeccion('clientes',this);return false;">
+                    🏢 Clientes
+                </a>
+                <a href="#" onclick="cambiarSeccion('permisos',this);return false;">
+                    🔐 Permisos
+                </a>
+                <a href="#" onclick="cambiarSeccion('auditoria',this);return false;">
+                    📋 Auditoría
+                </a>
+                
+                <div style="border-top:1px solid rgba(255,255,255,.2);margin:1rem 0;"></div>
+                
+                <a href="taller-dashboard.html">
+                    🔧 Dashboard Taller
+                </a>
+                <a href="almacen-dashboard.html">
+                    📦 Dashboard Almacén
+                </a>
+                <a href="caja-dashboard.html">
+                    💰 Dashboard Caja
+                </a>
+                <a href="financiero-dashboard.html">
+                    💹 Dashboard Financiero
+                </a>
+                <a href="gerencia-dashboard.html">
+                    👑 Dashboard Gerencia
+                </a>
+                <a href="estadisticas.html">
+                    📊 Estadísticas Globales
+                </a>
+                <a href="proveedores.html">
+                    📦 Proveedores
+                </a>
+                <a href="cuentas-por-pagar.html">
+                    💳 Cuentas por Pagar
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p id="nombreUsuario" style="font-size:.875rem;margin-bottom:.5rem;color:white;">...</p>
+                <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;padding:.5rem;font-size:.875rem;">
+                    🚪 Salir
+                </button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- DASHBOARD -->
+            <!-- REEMPLAZAR LA SECCIÓN id="dashboard" COMPLETA -->
+
+                <section id="dashboard" class="section active">
+                    <h1>⚙️ Panel de Administración</h1>
+                    
+                    <!-- MÉTRICAS PRINCIPALES -->
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-value" id="totalUsuarios">-</div>
+                            <div class="metric-label">👥 Usuarios Activos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="totalClientes">-</div>
+                            <div class="metric-label">🏢 Clientes</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="totalVehiculos">-</div>
+                            <div class="metric-label">🚗 Vehículos</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value" id="totalOTs">-</div>
+                            <div class="metric-label">🔧 Órdenes de Trabajo</div>
+                        </div>
+                    </div>
+
+                    <!-- RESUMEN ADICIONAL -->
+                    <div class="metrics" style="margin-top:1rem;">
+                        <div class="metric" style="border-left-color:var(--success);">
+                            <div class="metric-value" id="totalFacturas">-</div>
+                            <div class="metric-label">💰 Facturas Emitidas</div>
+                        </div>
+                        <div class="metric" style="border-left-color:var(--warning);">
+                            <div class="metric-value" id="totalRepuestos">-</div>
+                            <div class="metric-label">🔩 Repuestos en Stock</div>
+                        </div>
+                        <div class="metric" style="border-left-color:var(--danger);">
+                            <div class="metric-value" id="stockBajo">-</div>
+                            <div class="metric-label">⚠️ Stock Bajo</div>
+                        </div>
+                        <div class="metric" style="border-left-color:var(--primary);">
+                            <div class="metric-value" id="totalProveedores">-</div>
+                            <div class="metric-label">📦 Proveedores</div>
+                        </div>
+                    </div>
+
+                    <!-- CONTENIDO PRINCIPAL -->
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-top:2rem;">
+                        <!-- ACTIVIDAD RECIENTE -->
+                        <div class="card">
+                            <h3>📈 Actividad Reciente del Sistema</h3>
+                            <div id="actividadReciente" style="max-height:400px;overflow-y:auto;">
+                                <div style="text-align:center;padding:3rem;color:var(--gray-700);">
+                                    <div style="font-size:3rem;margin-bottom:1rem;">⏳</div>
+                                    <p>Cargando actividad reciente...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ACCIONES RÁPIDAS -->
+                        <div class="card">
+                            <h3>⚡ Acciones Rápidas</h3>
+                            <div style="display:flex;flex-direction:column;gap:.75rem;">
+                                <button onclick="abrirModalUsuario()" class="btn btn-primary">
+                                    👤 Nuevo Usuario
+                                </button>
+                                <button onclick="abrirModalCliente()" class="btn btn-primary">
+                                    🏢 Nuevo Cliente
+                                </button>
+                                <button onclick="window.location.href='cotizacion.html'" class="btn btn-secondary">
+                                    📋 Nueva Cotización
+                                </button>
+                                <button onclick="window.location.href='inspeccion.html'" class="btn btn-secondary">
+                                    📸 Nueva Inspección
+                                </button>
+                            </div>
+
+                            <!-- RESUMEN DE ESTADO -->
+                            <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--gray-200);">
+                                <h4 style="margin-top:0;">📊 Estado del Sistema</h4>
+                                <div style="display:flex;flex-direction:column;gap:.5rem;">
+                                    <div style="display:flex;justify-content:space-between;padding:.5rem;background:var(--gray-50);border-radius:.5rem;">
+                                        <span>OTs Pendientes:</span>
+                                        <strong id="otsPendientesResumen">-</strong>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;padding:.5rem;background:var(--gray-50);border-radius:.5rem;">
+                                        <span>OTs En Proceso:</span>
+                                        <strong id="otsProcesoResumen">-</strong>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;padding:.5rem;background:var(--gray-50);border-radius:.5rem;">
+                                        <span>Solicitudes:</span>
+                                        <strong id="solicitudesResumen">-</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO DE CRECIMIENTO -->
+                    <div class="card" style="margin-top:1.5rem;">
+                        <h3>📊 Crecimiento Mensual</h3>
+                        <div style="height:300px;" id="chartCrecimiento">
+                            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-700);">
+                                <div style="text-align:center;">
+                                    <div style="font-size:3rem;margin-bottom:1rem;">📈</div>
+                                    <p>Gráfico de crecimiento mensual</p>
+                                    <small>Se mostrará cuando haya datos suficientes</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ÚLTIMOS USUARIOS Y CLIENTES -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem;">
+                        <div class="card">
+                            <h3>👥 Últimos Usuarios Registrados</h3>
+                            <div id="ultimosUsuarios"></div>
+                        </div>
+                        <div class="card">
+                            <h3>🏢 Últimos Clientes Registrados</h3>
+                            <div id="ultimosClientes"></div>
+                        </div>
+                    </div>
+                </section>
+            <!-- PERMISOS -->
+            <section id="permisos" class="section">
+                <h1>🔐 Gestión de Permisos</h1>
+                
+                <div class="card" style="margin-bottom:1rem;">
+                    <div style="display:flex;gap:1rem;align-items:center;">
+                        <select id="filtroRolPermisos" class="form-control" onchange="cargarPermisos()" style="flex:1;">
+                            <option value="">Seleccionar rol...</option>
+                            <option value="superadmin">SuperAdmin</option>
+                            <option value="jefe_taller">Jefe de Taller</option>
+                            <option value="jefe_almacen">Jefe de Almacén</option>
+                            <option value="mecanico">Mecánico</option>
+                            <option value="cajero">Cajero</option>
+                            <option value="cliente_final">Cliente Final</option>
+                            <option value="cliente_financiero">Financiero</option>
+                            <option value="cliente_admin_taller">Admin Taller</option>
+                            <option value="cliente_gerencia">Gerencia</option>
+                        </select>
+                        <button onclick="abrirModalAgregarPermiso()" class="btn btn-primary" id="btnAgregarPermiso" style="display:none;">
+                            + Agregar Permiso
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tablaPermisos"></div>
+            </section>
+
+            <!-- AUDITORÍA -->
+            <section id="auditoria" class="section">
+                <h1>📋 Auditoría de Acciones</h1>
+                
+                <div class="card" style="margin-bottom:1rem;">
+                    <div style="display:flex;gap:1rem;">
+                        <input type="date" id="auditoriaDesde" class="form-control">
+                        <input type="date" id="auditoriaHasta" class="form-control">
+                        <select id="auditoriaModulo" class="form-control">
+                            <option value="">Todos los módulos</option>
+                        </select>
+                        <button onclick="filtrarAuditoria()" class="btn btn-primary">Filtrar</button>
+                    </div>
+                </div>
+
+                <div id="tablaAuditoria"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL USUARIO -->
+    <div class="modal" id="modalUsuario">
+        <div class="modal-content">
+            <h2 id="tituloModalUsuario">Nuevo Usuario</h2>
+            <form id="formUsuario">
+                <input type="hidden" id="usuarioId">
+
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="usuarioNombre" class="form-control" required>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="usuarioEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="usuarioTelefono" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tipo Documento</label>
+                        <select id="usuarioDocTipo" class="form-control">
+                            <option value="CC">Cédula de Ciudadanía</option>
+                            <option value="CE">Cédula de Extranjería</option>
+                            <option value="PA">Pasaporte</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Número Documento</label>
+                        <input type="text" id="usuarioDocNumero" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Rol *</label>
+                    <select id="usuarioRol" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="superadmin">SuperAdmin</option>
+                        <option value="jefe_taller">Jefe de Taller</option>
+                        <option value="jefe_almacen">Jefe de Almacén</option>
+                        <option value="mecanico">Mecánico</option>
+                        <option value="cajero">Cajero</option>
+                        <option value="cliente_final">Cliente Final</option>
+                        <option value="cliente_financiero">Financiero</option>
+                        <option value="cliente_admin_taller">Admin Taller</option>
+                        <option value="cliente_gerencia">Gerencia</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="passwordGroup">
+                    <label>Contraseña Temporal *</label>
+                    <input type="password" id="usuarioPassword" class="form-control" minlength="6">
+                    <small style="color:var(--gray-700);">Mínimo 6 caracteres. El usuario deberá cambiarla en el primer acceso.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" id="usuarioCiudad" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="usuarioNotas" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        💾 Guardar Usuario
+                    </button>
+                    <button type="button" onclick="cerrarModal()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CLIENTE -->
+    <div class="modal" id="modalCliente">
+        <div class="modal-content">
+            <h2 id="tituloModalCliente">Nuevo Cliente</h2>
+            <form id="formCliente">
+                <input type="hidden" id="clienteId">
+
+                <div class="form-group">
+                    <label>Razón Social *</label>
+                    <input type="text" id="clienteRazonSocial" class="form-control" required>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>NIT *</label>
+                        <input type="text" id="clienteNit" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Persona</label>
+                        <select id="clienteTipoPersona" class="form-control">
+                            <option value="juridica">Jurídica</option>
+                            <option value="natural">Natural</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="clienteTelefono" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="clienteEmail" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" id="clienteDireccion" class="form-control">
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Ciudad</label>
+                        <input type="text" id="clienteCiudad" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Sitio Web</label>
+                        <input type="url" id="clienteSitioWeb" class="form-control">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        💾 Guardar Cliente
+                    </button>
+                    <button type="button" onclick="cerrarModalCliente()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin-dashboard.js"></script>
+</body>
+</html>

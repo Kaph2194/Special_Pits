@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadísticas del Sistema - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car - Estadísticas Globales</div>
+            <nav>
+                <button onclick="history.back()" class="btn btn-secondary">← Volver</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>📊 Estadísticas Globales del Sistema</h1>
+
+        <!-- KPIs Principales -->
+        <div id="kpisGlobales"></div>
+
+        <!-- Gráficos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem;">
+            <div class="card">
+                <h3>📈 Evolución Mensual</h3>
+                <div style="height:300px;">
+                    <canvas id="chartEvolucion"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>🏆 Top Clientes</h3>
+                <div id="topClientes"></div>
+            </div>
+        </div>
+
+        <!-- Tablas -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>📋 Productividad Mensual</h3>
+            <div id="tablaProductividad"></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/estadisticas.js"></script>
+</body>
+</html>

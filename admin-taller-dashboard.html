@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin Taller - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:rgb(9, 2, 107);box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+            🔧 Dashboard Taller
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+        .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .kpi-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:1rem; margin-bottom:2rem;
+        }
+        .kpi-card {
+            background:white; padding:1.5rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            border-left:4px solid var(--primary);
+        }
+        .kpi-value { font-size:2rem; font-weight:700; color:var(--primary); margin:.5rem 0; }
+        .kpi-label { color:var(--gray-700); font-size:.875rem; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div style="text-align:center; margin-bottom:2rem;">
+            <div style="font-size:2rem;">🏭</div>
+            <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+            <small style="color:rgba(255,255,255,.6);">Admin Taller</small>
+        </div>
+        <nav>
+            <a href="#" class="active" onclick="cambiarSeccion('dashboard',this)">📊 Dashboard</a>
+            <a href="#" onclick="cambiarSeccion('operaciones',this)">🔧 Operaciones</a>
+            <a href="#" onclick="cambiarSeccion('repuestos',this)">🔩 Repuestos Usados</a>
+            <a href="#" onclick="cambiarSeccion('mecanicos',this)">👷 Productividad</a>
+            <a href="#" onclick="cambiarSeccion('vehiculos',this)">🚗 Vehículos Atendidos</a>
+            <a href="#" onclick="cambiarSeccion('tiempos',this)">⏱️ Tiempos de Servicio</a>
+        </nav>
+            <div class="sidebar-footer">
+            <p id="nombreUsuario">...</p>
+            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
+            🚪 Salir
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active">
+            <h1>🏭 Dashboard Administrativo del Taller</h1>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">🔧 OTs del Mes</div>
+                    <div class="kpi-value" id="otsMes">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">💰 Ingresos</div>
+                    <div class="kpi-value" id="ingresosMes">$0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">📦 Repuestos Usados</div>
+                    <div class="kpi-value" id="repuestosUsados">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">👷 Horas Hombre</div>
+                    <div class="kpi-value" id="horasHombre">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">🚗 Vehículos Atendidos</div>
+                    <div class="kpi-value" id="vehiculosAtendidos">0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">⏱️ Tiempo Promedio</div>
+                    <div class="kpi-value" id="tiempoPromedio">0h</div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                <div class="card">
+                    <h3>📈 OTs por Estado</h3>
+                    <div id="chartEstados"></div>
+                </div>
+                <div class="card">
+                    <h3>🔝 Top Servicios</h3>
+                    <div id="topServicios"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- OPERACIONES -->
+        <section id="operaciones" class="section">
+            <h1>🔧 Operaciones del Taller</h1>
+            <div id="tablaOperaciones"></div>
+        </section>
+
+        <!-- REPUESTOS USADOS -->
+        <section id="repuestos" class="section">
+            <h1>🔩 Repuestos Más Usados</h1>
+            <div id="tablaRepuestosUsados"></div>
+        </section>
+
+        <!-- PRODUCTIVIDAD MECÁNICOS -->
+        <section id="mecanicos" class="section">
+            <h1>👷 Productividad por Mecánico</h1>
+            <div id="tablaMecanicos"></div>
+        </section>
+
+        <!-- VEHÍCULOS ATENDIDOS -->
+        <section id="vehiculos" class="section">
+            <h1>🚗 Vehículos Atendidos</h1>
+            <div id="tablaVehiculos"></div>
+        </section>
+
+        <!-- TIEMPOS DE SERVICIO -->
+        <section id="tiempos" class="section">
+            <h1>⏱️ Análisis de Tiempos</h1>
+            <div id="tablaTiempos"></div>
+        </section>
+    </main>
+</div>
+<!-- ANTES DEL CIERRE DE </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script type="module" src="js/admin-taller-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparar Inspecciones - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .comparacion-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .columna-inspeccion {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .columna-inspeccion.ingreso {
+            border-top: 4px solid var(--primary);
+        }
+
+        .columna-inspeccion.entrega {
+            border-top: 4px solid var(--success);
+        }
+
+        .diferencia-item {
+            padding: 1rem;
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .diferencia-item.deterioro {
+            background: #fee2e2;
+            border-left-color: var(--danger);
+        }
+
+        .diferencia-item.mejora {
+            background: #d1fae5;
+            border-left-color: var(--success);
+        }
+
+        .foto-comparacion {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .foto-comparacion img {
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        @media (max-width: 968px) {
+            .comparacion-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="aprobarEntrega()" class="btn btn-success">
+                    ✓ Aprobar Entrega
+                </button>
+                <button onclick="rechazarEntrega()" class="btn btn-danger">
+                    ✗ Rechazar
+                </button>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ← Volver
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>🔍 Comparación de Inspecciones</h1>
+        <p style="color: var(--gray-700); margin-bottom: 2rem;">
+            Compara el estado del vehículo entre el ingreso y la entrega
+        </p>
+
+        <div id="alertasDiferencias"></div>
+
+        <div class="comparacion-container">
+            <!-- INGRESO -->
+            <div class="columna-inspeccion ingreso">
+                <h2>📥 Inspección de Ingreso</h2>
+                <div id="datosIngreso"></div>
+            </div>
+
+            <!-- ENTREGA -->
+            <div class="columna-inspeccion entrega">
+                <h2>📤 Inspección de Entrega</h2>
+                <div id="datosEntrega"></div>
+            </div>
+        </div>
+
+        <!-- DIFERENCIAS ENCONTRADAS -->
+        <div class="card" id="seccionDiferencias" style="display: none;">
+            <h2>⚠️ Diferencias Detectadas</h2>
+            <div id="listaDiferencias"></div>
+        </div>
+
+        <!-- COMPARACIÓN DE FOTOS -->
+        <div class="card">
+            <h2>📸 Comparación Fotográfica</h2>
+            <div id="comparacionFotos"></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/inspeccion-comparar.js"></script>
+</body>
+</html>

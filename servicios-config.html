@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Servicios - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .item-ancla {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:.75rem;
+            background:var(--gray-50);
+            border-radius:.5rem;
+            margin-bottom:.5rem;
+        }
+        .item-ancla:hover { background:var(--gray-100); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car - Configurar Servicios</div>
+            <nav>
+                <button onclick="location.href='almacen-dashboard.html'" class="btn btn-secondary">
+                    ← Volver al Almacén
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>⚙️ Configuración de Servicios</h1>
+        
+        <div class="card" style="margin-bottom:1rem;">
+            <select id="selectServicio" class="form-control" onchange="cargarDetalleServicio()">
+                <option value="">Seleccionar servicio...</option>
+            </select>
+        </div>
+
+        <div id="detalleServicio" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                <!-- REPUESTOS -->
+                <div class="card">
+                    <h2>🔩 Repuestos Anclados</h2>
+                    <button onclick="abrirModalAnclarRepuesto()" class="btn btn-primary" style="width:100%;margin-bottom:1rem;">
+                        + Anclar Repuesto
+                    </button>
+                    <div id="listaRepuestosAnclados"></div>
+                </div>
+
+                <!-- MANO DE OBRA -->
+                <div class="card">
+                    <h2>👷 Mano de Obra Anclada</h2>
+                    <button onclick="abrirModalAnclarManoObra()" class="btn btn-primary" style="width:100%;margin-bottom:1rem;">
+                        + Anclar Mano de Obra
+                    </button>
+                    <div id="listaManoObraAnclada"></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:1.5rem;">
+                <h3>💰 Cálculo Estimado del Servicio</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+                    <div>
+                        <strong>Costo Repuestos:</strong>
+                        <div style="font-size:1.5rem;color:var(--danger);" id="costoRepuestos">$0</div>
+                    </div>
+                    <div>
+                        <strong>Costo Mano de Obra:</strong>
+                        <div style="font-size:1.5rem;color:var(--warning);" id="costoManoObra">$0</div>
+                    </div>
+                    <div>
+                        <strong>Total Estimado:</strong>
+                        <div style="font-size:1.5rem;color:var(--success);" id="totalEstimado">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ANCLAR REPUESTO -->
+    <div class="modal" id="modalAnclarRepuesto">
+        <div class="modal-content">
+            <h2>Anclar Repuesto al Servicio</h2>
+            <form id="formAnclarRepuesto">
+                <input type="hidden" id="servicioIdRepuesto">
+                
+                <div class="form-group">
+                    <label>Repuesto *</label>
+                    <select id="repuestoId" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Cantidad Base</label>
+                    <input type="number" id="cantidadRepuesto" class="form-control" 
+                           value="1" min="0.01" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="opcionalRepuesto">
+                        Es opcional (no siempre se usa)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="notasRepuesto" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">✓ Anclar</button>
+                    <button type="button" onclick="cerrarModalRepuesto()" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ANCLAR MANO DE OBRA -->
+    <div class="modal" id="modalAnclarManoObra">
+        <div class="modal-content">
+            <h2>Anclar Mano de Obra al Servicio</h2>
+            <form id="formAnclarManoObra">
+                <input type="hidden" id="servicioIdManoObra">
+                
+                <div class="form-group">
+                    <label>Mano de Obra *</label>
+                    <select id="manoObraId" class="form-control" required>
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Horas Estimadas</label>
+                    <input type="number" id="horasManoObra" class="form-control" 
+                           value="1" min="0.1" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="opcionalManoObra">
+                        Es opcional
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="notasManoObra" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">✓ Anclar</button>
+                    <button type="button" onclick="cerrarModalManoObra()" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/servicios-config.js"></script>
+</body>
+</html>

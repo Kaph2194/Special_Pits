@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Gerencial - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+             Dashboard Gerencial
+        </div>
+        <button onclick="history.back()" class="btn btn-secondary">
+            ← Volver
+        </button>
+    </div>
+    </header>
+    <style>
+        .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+        .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
+        .sidebar nav a {
+            display:flex; align-items:center; gap:.75rem;
+            padding:.75rem 1rem; color:rgba(255,255,255,.7);
+            text-decoration:none; border-radius:.5rem; margin-bottom:.25rem;
+            transition:all .3s;
+        }
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background:rgba(255,255,255,.1); color:white;
+        }
+        .main { background:var(--gray-50); padding:2rem; }
+        .executive-kpi {
+            background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color:white; padding:2rem; border-radius:1rem;
+            box-shadow:0 4px 12px rgba(0,0,0,.15); margin-bottom:2rem;
+        }
+        .executive-kpi h2 { margin:0 0 1rem; font-size:1.5rem; }
+        .kpi-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:1.5rem; margin-bottom:2rem;
+        }
+        .kpi-card {
+            background:white; padding:2rem; border-radius:.75rem;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        }
+        .kpi-value { font-size:2.5rem; font-weight:700; color:var(--primary); margin:.5rem 0; }
+        .kpi-label { color:var(--gray-700); font-size:1rem; }
+        .trend { font-size:.875rem; margin-top:.5rem; }
+        .trend.up { color:var(--success); }
+        .trend.down { color:var(--danger); }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+    <div style="text-align:center; margin-bottom:2rem;">
+        <div style="font-size:2rem;">👑</div>
+        <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
+        <small style="color:rgba(255,255,255,.6);">Dashboard Gerencial</small>
+    </div>
+    <nav>
+        <a href="#" class="active" onclick="cambiarSeccion('resumen',this)">📊 Resumen Ejecutivo</a>
+        
+        <div style="color:rgba(255,255,255,.4);font-size:.75rem;font-weight:700;
+                    padding:.5rem 1rem;margin-top:1rem;">VISTAS CONSOLIDADAS</div>
+        
+        <a href="#" onclick="cambiarSeccion('financiero',this)">💰 Vista Financiera</a>
+        <a href="#" onclick="cambiarSeccion('operativo',this)">🔧 Vista Operativa</a>
+        <a href="#" onclick="cambiarSeccion('cuentas_pagar',this)">💳 Cuentas por Pagar</a>
+        <a href="#" onclick="cambiarSeccion('clientes',this)">👥 Clientes</a>
+        <a href="#" onclick="cambiarSeccion('recursos',this)">👷 Recursos Humanos</a>
+        
+        <div style="color:rgba(255,255,255,.4);font-size:.75rem;font-weight:700;
+                    padding:.5rem 1rem;margin-top:1rem;">ACCESO RÁPIDO</div>
+        
+        <a href="taller-dashboard.html" target="_blank">🔧 Dashboard Taller</a>
+        <a href="almacen-dashboard.html" target="_blank">📦 Dashboard Almacén</a>
+        <a href="caja-dashboard.html" target="_blank">💰 Dashboard Caja</a>
+        <a href="proveedores.html" target="_blank">📦 Proveedores</a>
+        <a href="cuentas-por-pagar.html" target="_blank">💳 Cuentas por Pagar</a>
+        <a href="estadisticas.html">📊 Estadísticas Globales</a>
+    </nav>
+    <div class="sidebar-footer">
+            <p id="nombreUsuario">...</p>
+            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
+            🚪 Salir
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <!-- RESUMEN EJECUTIVO -->
+        <section id="resumen" class="section active">
+            <div class="executive-kpi">
+                <h2>📊 Resumen Ejecutivo - Mes Actual</h2>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;">
+                    <div>
+                        <div style="font-size:2rem;font-weight:700;" id="ventasMes">$0</div>
+                        <div style="opacity:.9;">Ventas del Mes</div>
+                    </div>
+                    <div>
+                        <div style="font-size:2rem;font-weight:700;" id="utilidadMes">$0</div>
+                        <div style="opacity:.9;">Utilidad Bruta</div>
+                    </div>
+                    <div>
+                        <div style="font-size:2rem;font-weight:700;" id="margenMes">0%</div>
+                        <div style="opacity:.9;">Margen</div>
+                    </div>
+                    <div>
+                        <div style="font-size:2rem;font-weight:700;" id="clientesMes">0</div>
+                        <div style="opacity:.9;">Clientes Atendidos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">📈 Crecimiento vs Mes Anterior</div>
+                    <div class="kpi-value" id="crecimiento">0%</div>
+                    <div class="trend up" id="trendCrecimiento">↗ Tendencia positiva</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">🔧 OTs del Mes</div>
+                    <div class="kpi-value" id="capacidad">0%</div>
+                    <div class="trend" id="trendCapacidad"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">⭐ Satisfacción Cliente</div>
+                    <div class="kpi-value" id="satisfaccion">N/A</div>
+                    <div class="trend">Por implementar encuestas</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">💼 Productividad</div>
+                    <div class="kpi-value" id="productividad">0</div>
+                    <div class="trend" id="trendProductividad">OTs/Mecánico/Mes</div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+                <div class="card">
+                    <h3>📈 Evolución Mensual</h3>
+                    <div id="chartEvolucion" style="height:300px;"></div>
+                </div>
+                <div class="card">
+                    <h3>🎯 Objetivos del Mes</h3>
+                    <div id="objetivos"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINANCIERO -->
+        <section id="financiero" class="section">
+            <h1>💰 Vista Financiera</h1>
+            <div id="vistaFinanciera"></div>
+        </section>
+
+        <!-- OPERATIVO -->
+        <section id="operativo" class="section">
+            <h1>🔧 Vista Operativa</h1>
+            <div id="vistaOperativa"></div>
+        </section>
+        <section id="cuentas_pagar" class="section">
+    <h1>💳 Gestión de Cuentas por Pagar</h1>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">💰 Total por Pagar</div>
+            <div class="kpi-value" id="gerencia_total_pagar">$0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">⚠️ Facturas Vencidas</div>
+            <div class="kpi-value" style="color:var(--danger);" id="gerencia_vencidas">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">📊 Promedio Días Pago</div>
+            <div class="kpi-value" id="gerencia_promedio_dias">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">📦 Proveedores Activos</div>
+            <div class="kpi-value" id="gerencia_proveedores">0</div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-top:2rem;">
+        <div class="card">
+            <h3>📋 Últimas Facturas por Pagar</h3>
+            <div id="gerencia_ultimas_cxp"></div>
+        </div>
+        <div class="card">
+            <h3>🔝 Top Proveedores</h3>
+            <div id="gerencia_top_proveedores"></div>
+        </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+        <button onclick="window.open('cuentas-por-pagar.html','_blank')" class="btn btn-primary">
+            Ver Gestión Completa de CxP →
+        </button>
+    </div>
+</section>
+        <!-- CLIENTES -->
+        <section id="clientes" class="section">
+            <h1>👥 Análisis de Clientes</h1>
+            <div id="vistaClientes"></div>
+        </section>
+
+        <!-- RECURSOS -->
+        <section id="recursos" class="section">
+            <h1>👷 Gestión de Recursos</h1>
+            <div id="vistaRecursos"></div>
+        </section>
+    </main>
+</div>
+<!-- ANTES DEL CIERRE DE </body> -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script type="module" src="js/gerencia-dashboard.js"></script>
+</body>
+</html>

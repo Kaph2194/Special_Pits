@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspección de Vehículo - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .inspeccion-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .wizard-steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gray-200);
+            z-index: 0;
+        }
+
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .wizard-step.active .step-circle {
+            background: var(--primary);
+            color: white;
+        }
+
+        .wizard-step.completed .step-circle {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+
+        .wizard-step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 4/3;
+            border: 2px dashed var(--gray-300);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .photo-item:hover {
+            border-color: var(--primary);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--gray-700);
+        }
+
+        .photo-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checklist-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .checklist-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .checklist-category {
+            background: var(--gray-100);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+
+        .estado-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .estado-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 2px solid var(--gray-300);
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+
+        .estado-btn.active {
+            font-weight: 600;
+        }
+
+        .estado-btn.bueno.active {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .estado-btn.regular.active {
+            background: var(--warning);
+            color: white;
+            border-color: var(--warning);
+        }
+
+        .estado-btn.malo.active {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .signature-pad {
+            border: 2px solid var(--gray-300);
+            border-radius: 0.5rem;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: 0.5rem;
+        }
+
+        .inventory-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .camera-preview {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 10000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        }
+        .camera-preview.active {
+            display: flex;
+        }
+
+        .camera-preview video {
+            max-width: 90%;
+            max-height: 70vh;
+            border-radius: 1rem;
+        }
+
+        .camera-controls {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .camera-controls button {
+        padding: 1rem 2rem;
+        font-size: 1.25rem;
+        }
+        .fuel-level {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .fuel-option {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-300);
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .fuel-option.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ← Volver
+                </button>
+            </nav>
+        </div>
+    </header>
+    <div class="camera-preview" id="cameraPreview">
+    <video id="cameraVideo" autoplay playsinline></video>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <div class="camera-controls">
+        <button onclick="capturarFoto()" class="btn btn-success">📸 Capturar</button>
+        <button onclick="cerrarCamara()" class="btn btn-danger">✕ Cancelar</button>
+    </div>
+    </div>
+
+    <div class="container inspeccion-container">
+        <!-- WIZARD DE PASOS -->
+        <div class="wizard-steps">
+            <div class="wizard-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Datos Básicos</div>
+            </div>
+            <div class="wizard-step" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Fotos y Videos</div>
+            </div>
+            <div class="wizard-step" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Checklist</div>
+            </div>
+            <div class="wizard-step" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-label">Inventario</div>
+            </div>
+            <div class="wizard-step" data-step="5">
+                <div class="step-circle">5</div>
+                <div class="step-label">Firmas</div>
+            </div>
+        </div>
+
+        <!-- PASO 1: DATOS BÁSICOS -->
+        <div class="step-content active" id="step1">
+            <div class="card">
+                <h2>📋 Información de Inspección</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de Inspección</label>
+                        <select id="tipoInspeccion" class="form-control">
+                            <option value="ingreso">Ingreso al Taller</option>
+                            <option value="entrega">Entrega al Cliente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fecha y Hora</label>
+                        <input type="datetime-local" id="fechaInspeccion" class="form-control" required>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 2rem;">🚗 Datos del Vehículo</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Placa *</label>
+                        <input type="text" id="placaVehiculo" class="form-control" 
+                               placeholder="ABC123" style="text-transform: uppercase;" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Kilometraje *</label>
+                        <input type="number" id="kilometraje" class="form-control" 
+                               placeholder="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nivel de Combustible</label>
+                    <div class="fuel-level">
+                        <div class="fuel-option" onclick="seleccionarCombustible('vacio')">
+                            <div>⛽ Vacío</div>
+                        </div>
+                        <div class="fuel-option" onclick="seleccionarCombustible('1/4')">
+                            <div>⛽ 1/4</div>
+                        </div>
+                        <div class="fuel-option" onclick="seleccionarCombustible('1/2')">
+                            <div>⛽ 1/2</div>
+                        </div>
+                        <div class="fuel-option" onclick="seleccionarCombustible('3/4')">
+                            <div>⛽ 3/4</div>
+                        </div>
+                        <div class="fuel-option" onclick="seleccionarCombustible('lleno')">
+                            <div>⛽ Lleno</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 2rem;">👤 Datos del Conductor</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" id="conductorNombre" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cédula *</label>
+                        <input type="text" id="conductorCedula" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono *</label>
+                        <input type="tel" id="conductorTelefono" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="conductorEmail" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones Generales</label>
+                    <textarea id="observacionesGenerales" class="form-control" rows="4"
+                              placeholder="Cualquier observación importante sobre el vehículo..."></textarea>
+                </div>
+
+                <button onclick="siguientePaso()" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Siguiente: Fotos y Videos →
+                </button>
+            </div>
+        </div>
+
+        <!-- PASO 2: FOTOS Y VIDEOS -->
+        <div class="step-content" id="step2">
+            <div class="card">
+                <h2>📸 Evidencias Fotográficas y Videos</h2>
+                <p style="color: var(--gray-700); margin-bottom: 1.5rem;">
+                    Toma fotos desde todos los ángulos. Documenta cualquier daño visible.
+                </p>
+
+                <div class="photo-grid" id="photoGrid">
+                    <!-- Ángulos obligatorios -->
+                    <div class="photo-item" onclick="tomarFoto('frontal')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Frontal</span>
+                        </div>
+                        <div class="photo-label">Vista Frontal</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('trasero')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Trasero</span>
+                        </div>
+                        <div class="photo-label">Vista Trasera</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('lateral_izq')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Lateral Izq</span>
+                        </div>
+                        <div class="photo-label">Lateral Izquierdo</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('lateral_der')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Lateral Der</span>
+                        </div>
+                        <div class="photo-label">Lateral Derecho</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('interior')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Interior</span>
+                        </div>
+                        <div class="photo-label">Vista Interior</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('tablero')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Tablero</span>
+                        </div>
+                        <div class="photo-label">Tablero/Kilometraje</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('motor')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">📷</span>
+                            <span>Motor</span>
+                        </div>
+                        <div class="photo-label">Motor</div>
+                    </div>
+
+                    <div class="photo-item" onclick="tomarFoto('adicional')">
+                        <div class="photo-placeholder">
+                            <span style="font-size: 2rem;">➕</span>
+                            <span>Adicional</span>
+                        </div>
+                        <div class="photo-label">Foto Adicional</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button onclick="tomarVideo()" class="btn btn-primary">
+                        🎥 Grabar Video del Vehículo
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button onclick="anteriorPaso()" class="btn btn-secondary" style="flex: 1;">
+                        ← Anterior
+                    </button>
+                    <button onclick="siguientePaso()" class="btn btn-primary" style="flex: 1;">
+                        Siguiente: Checklist →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 3: CHECKLIST -->
+        <div class="step-content" id="step3">
+            <div class="card">
+                <h2>✅ Checklist Detallado</h2>
+                <p style="color: var(--gray-700); margin-bottom: 1.5rem;">
+                    Revisa cada elemento y marca su estado actual
+                </p>
+
+                <div id="checklistContainer" class="checklist-grid">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button onclick="anteriorPaso()" class="btn btn-secondary" style="flex: 1;">
+                        ← Anterior
+                    </button>
+                    <button onclick="siguientePaso()" class="btn btn-primary" style="flex: 1;">
+                        Siguiente: Inventario →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 4: INVENTARIO -->
+        <div class="step-content" id="step4">
+            <div class="card">
+                <h2>📦 Inventario del Vehículo</h2>
+                <p style="color: var(--gray-700); margin-bottom: 1.5rem;">
+                    Marca los elementos presentes en el vehículo
+                </p>
+
+                <div class="inventory-grid">
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_gato">
+                        <label for="inv_gato">🔧 Gato</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_llanta">
+                        <label for="inv_llanta">🛞 Llanta de Repuesto</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_herramientas">
+                        <label for="inv_herramientas">🔨 Herramientas</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_triangulos">
+                        <label for="inv_triangulos">⚠️ Triángulos</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_botiquin">
+                        <label for="inv_botiquin">🩹 Botiquín</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_extintor">
+                        <label for="inv_extintor">🧯 Extintor</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_documentos">
+                        <label for="inv_documentos">📄 Documentos</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_radio">
+                        <label for="inv_radio">📻 Radio</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_antena">
+                        <label for="inv_antena">📡 Antena</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_tapetes">
+                        <label for="inv_tapetes">🧽 Tapetes</label>
+                    </div>
+                    <div class="inventory-item">
+                        <input type="checkbox" id="inv_emblemas">
+                        <label for="inv_emblemas">✨ Emblemas</label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Otros Elementos</label>
+                    <textarea id="inventarioOtros" class="form-control" rows="3"
+                              placeholder="Elementos adicionales no listados..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button onclick="anteriorPaso()" class="btn btn-secondary" style="flex: 1;">
+                        ← Anterior
+                    </button>
+                    <button onclick="siguientePaso()" class="btn btn-primary" style="flex: 1;">
+                        Siguiente: Firmas →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PASO 5: FIRMAS -->
+        <div class="step-content" id="step5">
+            <div class="card">
+                <h2>✍️ Firmas Digitales</h2>
+                
+                <div style="margin-bottom: 2rem;">
+                    <h3>Firma del Conductor</h3>
+                    <canvas id="firmaConductor" class="signature-pad" width="600" height="200"></canvas>
+                    <button onclick="limpiarFirma('conductor')" class="btn btn-secondary" style="margin-top: 0.5rem;">
+                        🗑️ Limpiar
+                    </button>
+                </div>
+
+                <div>
+                    <h3>Firma del Inspector</h3>
+                    <canvas id="firmaInspector" class="signature-pad" width="600" height="200"></canvas>
+                    <button onclick="limpiarFirma('inspector')" class="btn btn-secondary" style="margin-top: 0.5rem;">
+                        🗑️ Limpiar
+                    </button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button onclick="anteriorPaso()" class="btn btn-secondary" style="flex: 1;">
+                        ← Anterior
+                    </button>
+                    <button onclick="guardarInspeccion()" class="btn btn-success" style="flex: 2;" id="btnGuardar">
+                        💾 Guardar Inspección Completa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="camera-preview" id="cameraPreview">
+    <video id="cameraVideo" autoplay playsinline></video>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <div class="camera-controls">
+        <button onclick="capturarFoto()" class="btn btn-success" style="font-size:1.25rem;padding:1rem 2rem;">
+            📸 Capturar Foto
+        </button>
+        <button onclick="cerrarCamara()" class="btn btn-danger" style="font-size:1.25rem;padding:1rem 2rem;">
+            ✕ Cancelar
+        </button>
+    </div>
+    </div>
+
+    <script type="module" src="js/inspeccion.js"></script>
+</body>
+</html>

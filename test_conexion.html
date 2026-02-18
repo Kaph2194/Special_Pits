@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Conexión Supabase - Special Car</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .resultado-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+            display: block;
+        }
+
+        .error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+            display: block;
+        }
+
+        .info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .config-info {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .config-info code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Test de Conexión a Supabase</h1>
+        <p class="subtitle">Sistema de Taller Automotriz - Special Car</p>
+
+        <div class="config-info">
+            <strong>📡 Configuración de Supabase:</strong><br>
+            <strong>URL:</strong> <code id="mostrarUrl">Cargando...</code><br>
+            <strong>API Key:</strong> <code>*********************</code> <span id="keyStatus" class="status-badge status-error">No verificada</span>
+        </div>
+
+        <button onclick="probarConexion()" class="btn" id="btnProbar">
+            🔌 Probar Conexión
+        </button>
+
+        <button onclick="mostrarClientes()" class="btn btn-success" id="btnClientes">
+            👥 Ver Clientes
+        </button>
+
+        <button onclick="insertarClientePrueba()" class="btn btn-warning" id="btnInsertar">
+            ➕ Insertar Cliente de Prueba
+        </button>
+
+        <div id="resultado" class="resultado-box"></div>
+        <div id="clientes" class="resultado-box"></div>
+    </div>
+
+    <!-- Cargar Supabase desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // ========================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ========================================
+        const SUPABASE_URL = 'https://pqsnpshtmtyzfrpdowoq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxc25wc2h0bXR5emZycGRvd29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNzExMzksImV4cCI6MjA4Njg0NzEzOX0.BOhTWspBwq-1XP-IiPAi2ve_IkYD8DGnIF84aIItG48';
+        // Mostrar URL en la interfaz
+        document.getElementById('mostrarUrl').textContent = SUPABASE_URL;
+
+        // Crear cliente de Supabase
+        let supabaseClient;
+        
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Cliente de Supabase creado exitosamente');
+            document.getElementById('keyStatus').textContent = 'Configurada';
+            document.getElementById('keyStatus').className = 'status-badge status-ok';
+        } catch (error) {
+            console.error('❌ Error creando cliente de Supabase:', error);
+            document.getElementById('keyStatus').textContent = 'Error';
+        }
+
+        // ========================================
+        // FUNCIÓN: PROBAR CONEXIÓN
+        // ========================================
+        async function probarConexion() {
+            const resultado = document.getElementById('resultado');
+            const btnProbar = document.getElementById('btnProbar');
+            
+            resultado.className = 'resultado-box info';
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<span class="loading"></span> Conectando a Supabase...';
+            btnProbar.disabled = true;
+
+            console.log('🔄 Iniciando prueba de conexión...');
+
+            try {
+                // Intentar contar registros en la tabla clientes
+                const { data, error, count } = await supabaseClient
+                    .from('clientes')
+                    .select('*', { count: 'exact', head: true });
+
+                console.log('📊 Respuesta:', { data, error, count });
+
+                if (error) {
+                    throw error;
+                }
+
+                // ÉXITO
+                resultado.className = 'resultado-box success';
+                resultado.innerHTML = `
+                    <h3>✅ ¡Conexión Exitosa!</h3>
+                    <p>✓ La base de datos está funcionando correctamente</p>
+                    <p>✓ Tabla 'clientes' encontrada</p>
+                    <p><strong>Total de clientes:</strong> ${count || 0}</p>
+                    <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #10b981;">
+                        <small>Ahora puedes hacer clic en "Ver Clientes" para ver los datos</small>
+                    </p>
+                `;
+                console.log('✅ Conexión exitosa. Clientes:', count);
+
+            } catch (error) {
+                // ERROR
+                resultado.className = 'resultado-box error';
+                resultado.innerHTML = `
+                    <h3>❌ Error de Conexión</h3>
+                    <p><strong>Código:</strong> ${error.code || 'Desconocido'}</p>
+                    <p><strong>Mensaje:</strong> ${error.message}</p>
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #f87171;">
+                    <p><strong>Posibles causas:</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>La API Key no es correcta</li>
+                        <li>La tabla 'clientes' no existe en Supabase</li>
+                        <li>Row Level Security está bloqueando el acceso</li>
+                        <li>No hay conexión a internet</li>
+                    </ul>
+                    <p style="margin-top: 15px; padding: 10px; background: white; border-radius: 5px;">
+                        <strong>💡 Solución:</strong> Ve a Supabase → SQL Editor y ejecuta el script de creación de tablas
+                    </p>
+                `;
+                console.error('❌ Error completo:', error);
+            } finally {
+                btnProbar.disabled = false;
+            }
+        }
+
+        // ========================================
+        // FUNCIÓN: MOSTRAR CLIENTES
+        // ========================================
+        async function mostrarClientes() {
+            const clientesDiv = document.getElementById('clientes');
+            const btnClientes = document.getElementById('btnClientes');
+            
+            clientesDiv.className = 'resultado-box info';
+            clientesDiv.style.display = 'block';
+            clientesDiv.innerHTML = '<span class="loading"></span> Cargando clientes...';
+            btnClientes.disabled = true;
+
+            console.log('🔄 Cargando clientes...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('clientes')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                console.log('📊 Clientes obtenidos:', data);
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!data || data.length === 0) {
+                    clientesDiv.className = 'resultado-box info';
+                    clientesDiv.innerHTML = `
+                        <h3>ℹ️ No hay clientes registrados</h3>
+                        <p>La tabla está vacía. Puedes:</p>
+                        <ol style="margin-left: 20px; margin-top: 10px;">
+                            <li>Hacer clic en "Insertar Cliente de Prueba"</li>
+                            <li>O agregar clientes manualmente desde Supabase</li>
+                        </ol>
+                    `;
+                } else {
+                    let html = `
+                        <h3>✅ ${data.length} Cliente(s) Encontrado(s)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cuenta</th>
+                                    <th>Razón Social</th>
+                                    <th>NIT</th>
+                                    <th>Ciudad</th>
+                                    <th>Margen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.forEach(cliente => {
+                        const margen = cliente.margen ? (cliente.margen * 100).toFixed(1) + '%' : '0%';
+                        html += `
+                            <tr>
+                                <td><strong>${cliente.cuenta}</strong></td>
+                                <td>${cliente.razon_social}</td>
+                                <td>${cliente.nit || 'N/A'}</td>
+                                <td>${cliente.ciudad || 'N/A'}</td>
+                                <td>${margen}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                    clientesDiv.className = 'resultado-box success';
+                    clientesDiv.innerHTML = html;
+                }
+
+            } catch (error) {
+                clientesDiv.className = 'resultado-box error';
+                clientesDiv.innerHTML = `
+                    <h3>❌ Error al cargar clientes</h3>
+                    <p><strong>Mensaje:</strong> ${error.message}</p>
+                `;
+                console.error('❌ Error:', error);
+            } finally {
+                btnClientes.disabled = false;
+            }
+        }
+
+        // ========================================
+        // FUNCIÓN: INSERTAR CLIENTE DE PRUEBA
+        // ========================================
+        async function insertarClientePrueba() {
+            const resultado = document.getElementById('resultado');
+            const btnInsertar = document.getElementById('btnInsertar');
+            
+            resultado.className = 'resultado-box info';
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<span class="loading"></span> Insertando cliente de prueba...';
+            btnInsertar.disabled = true;
+
+            try {
+                const nuevoCliente = {
+                    cuenta: 'CLI' + Date.now(),
+                    razon_social: 'Cliente de Prueba ' + new Date().toLocaleTimeString(),
+                    nit: '900' + Math.floor(Math.random() * 1000000),
+                    telefono: '300' + Math.floor(Math.random() * 10000000),
+                    email: 'cliente' + Date.now() + '@test.com',
+                    ciudad: 'Bogotá',
+                    margen: 0.18,
+                    activo: true
+                };
+
+                const { data, error } = await supabaseClient
+                    .from('clientes')
+                    .insert([nuevoCliente])
+                    .select();
+
+                if (error) {
+                    throw error;
+                }
+
+                resultado.className = 'resultado-box success';
+                resultado.innerHTML = `
+                    <h3>✅ Cliente insertado exitosamente</h3>
+                    <p><strong>Cuenta:</strong> ${nuevoCliente.cuenta}</p>
+                    <p><strong>Razón Social:</strong> ${nuevoCliente.razon_social}</p>
+                    <p style="margin-top: 15px;">
+                        <small>Haz clic en "Ver Clientes" para verlo en la lista</small>
+                    </p>
+                `;
+
+                console.log('✅ Cliente insertado:', data);
+
+            } catch (error) {
+                resultado.className = 'resultado-box error';
+                resultado.innerHTML = `
+                    <h3>❌ Error al insertar cliente</h3>
+                    <p><strong>Mensaje:</strong> ${error.message}</p>
+                `;
+                console.error('❌ Error:', error);
+            } finally {
+                btnInsertar.disabled = false;
+            }
+        }
+
+        // ========================================
+        // AUTO-PRUEBA AL CARGAR LA PÁGINA
+        // ========================================
+        window.addEventListener('load', () => {
+            console.log('🌐 Página cargada');
+            console.log('🔧 URL:', SUPABASE_URL);
+            console.log('🔑 Key configurada:', SUPABASE_KEY ? 'Sí' : 'No');
+            
+            // Auto-probar conexión después de 1 segundo
+            setTimeout(() => {
+                console.log('🚀 Probando conexión automáticamente...');
+                probarConexion();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

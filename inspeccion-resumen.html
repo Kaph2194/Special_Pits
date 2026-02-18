@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen de Inspección - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .resumen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--gray-700);
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .foto-galeria {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .foto-galeria img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .foto-galeria img:hover {
+            transform: scale(1.05);
+        }
+
+        .firma-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .firma-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+        }
+
+        .checklist-resumen {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .checklist-item-resumen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--gray-300);
+        }
+
+        .checklist-item-resumen.bueno {
+            border-left-color: var(--success);
+        }
+
+        .checklist-item-resumen.regular {
+            border-left-color: var(--warning);
+        }
+
+        .checklist-item-resumen.malo {
+            border-left-color: var(--danger);
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car</div>
+            <nav>
+                <button onclick="imprimirInspeccion()" class="btn btn-primary">
+                    🖨️ Imprimir
+                </button>
+                <button onclick="descargarPDF()" class="btn btn-success">
+                    📄 Descargar PDF
+                </button>
+                <button onclick="location.href='index.html'" class="btn btn-secondary">
+                    ← Volver
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>📋 Resumen de Inspección</h1>
+
+        <div class="resumen-grid">
+            <!-- INFORMACIÓN GENERAL -->
+            <div class="info-card">
+                <h3>ℹ️ Información General</h3>
+                <div id="infoGeneral">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- VEHÍCULO -->
+            <div class="info-card">
+                <h3>🚗 Vehículo</h3>
+                <div id="infoVehiculo">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+
+            <!-- CONDUCTOR -->
+            <div class="info-card">
+                <h3>👤 Conductor</h3>
+                <div id="infoConductor">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- INVENTARIO -->
+        <div class="card">
+            <h2>📦 Inventario del Vehículo</h2>
+            <div id="inventarioResumen" class="inventory-grid">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- FOTOS -->
+        <div class="card">
+            <h2>📸 Galería de Fotos</h2>
+            <div id="galeriaFotos" class="foto-galeria">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- VIDEOS -->
+        <div class="card" id="seccionVideos" style="display: none;">
+            <h2>🎥 Videos</h2>
+            <div id="listaVideos">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- CHECKLIST -->
+        <div class="card">
+            <h2>✅ Checklist Detallado</h2>
+            <div id="checklistResumen" class="checklist-resumen">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- FIRMAS -->
+        <div class="card">
+            <h2>✍️ Firmas</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h3>Firma del Conductor</h3>
+                    <div class="firma-container" id="firmaConductorImg">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+                <div>
+                    <h3>Firma del Inspector</h3>
+                    <div class="firma-container" id="firmaInspectorImg">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX PARA FOTOS -->
+    <div class="lightbox" id="lightbox" onclick="cerrarLightbox()">
+        <span class="lightbox-close">✕</span>
+        <img id="lightboxImg" src="" alt="Foto ampliada">
+    </div>
+
+    <script type="module" src="js/inspeccion-resumen.js"></script>
+</body>
+</html>

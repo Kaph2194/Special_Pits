@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Special Car</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .login-box {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-logo h1 { color: #667eea; font-size: 2.5rem; margin: 0; }
+        .login-logo p  { color: #6b7280; margin: .5rem 0 0; }
+        .demo-btns { display: grid; gap: .5rem; margin-top: 1.5rem; }
+        .demo-btn {
+            padding: .6rem;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: .5rem;
+            cursor: pointer;
+            font-size: .875rem;
+            text-align: left;
+            transition: background .2s;
+        }
+        .demo-btn:hover { background: #e5e7eb; }
+        #alerta { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="login-box">
+    <div class="login-logo">
+        <h1>🚗</h1>
+        <h2 style="color:#667eea;margin:.5rem 0 0;">Special Car</h2>
+        <p>Sistema de Gestión de Taller</p>
+    </div>
+
+    <div id="alerta"></div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" class="form-control"
+               placeholder="usuario@specialcar.com" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" class="form-control"
+               placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button id="btnLogin" class="btn btn-primary" style="width:100%;">
+        Iniciar Sesión
+    </button>
+
+    <div class="demo-btns">
+        <p style="color:#6b7280;font-size:.875rem;margin:0 0 .5rem;"><strong>Acceso rápido (desarrollo):</strong></p>
+        <button class="demo-btn" onclick="acceder('admin@specialcar.com')">
+            🔐 SuperAdmin — admin@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('jefe@specialcar.com')">
+            👔 Jefe de Taller — jefe@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('almacen@specialcar.com')">
+            📦 Jefe de Almacén — almacen@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('mecanico@specialcar.com')">
+            🔧 Mecánico — mecanico@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('caja@specialcar.com')">
+            💰 Cajero — caja@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('financiero@specialcar.com')">
+            📊 Financiero — financiero@specialcar.com
+        </button>
+        <button class="demo-btn" onclick="acceder('gerencia@specialcar.com')">
+            👑 Gerencia — gerencia@specialcar.com
+        </button>
+    </div>
+</div>
+
+<script type="module">
+import { auth } from './js/auth-system.js';
+
+// Si ya está logueado, redirigir
+(async () => {
+    if (await auth.inicializar()) {
+        auth.redirigirSegunRol();
+    }
+})();
+
+const btnLogin = document.getElementById('btnLogin');
+
+btnLogin.addEventListener('click', async () => {
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    if (!email) {
+        mostrarAlerta('Ingresa tu email', 'warning');
+        return;
+    }
+
+    btnLogin.disabled    = true;
+    btnLogin.textContent = 'Iniciando sesión...';
+
+    const resultado = await auth.login(email, password);
+
+    if (resultado.success) {
+        mostrarAlerta('✅ Bienvenido, ' + resultado.usuario.nombre, 'success');
+        setTimeout(() => auth.redirigirSegunRol(), 800);
+    } else {
+        mostrarAlerta('❌ ' + resultado.error, 'error');
+        btnLogin.disabled    = false;
+        btnLogin.textContent = 'Iniciar Sesión';
+    }
+});
+
+// Enter para login
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') btnLogin.click();
+});
+
+function mostrarAlerta(msg, tipo) {
+    document.getElementById('alerta').innerHTML =
+        `<div class="alert alert-${tipo}">${msg}</div>`;
+}
+
+// Acceso rápido para desarrollo
+window.acceder = async function(email) {
+    document.getElementById('email').value    = email;
+    document.getElementById('password').value = 'dev123';
+    btnLogin.click();
+}
+</script>
+</body>
+</html>
