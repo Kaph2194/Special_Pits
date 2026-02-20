@@ -400,9 +400,45 @@ select.form-control {
     justify-content: space-between;
     align-items: center;
 }
-
 .logo {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary);
+    width: 120px; /* Ajusta el tamaño a tu gusto */
+    height: auto;
+    display: block;
+    margin: 10px auto; /* Lo centra horizontalmente */
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2)); /* Le da un toque de profundidad */
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.form-control {
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-control:required:invalid {
+    border-color: var(--danger);
 }

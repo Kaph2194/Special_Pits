@@ -3,6 +3,8 @@ import { supabase } from './supabase-config.js';
 import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { formatearMoneda } from './utils.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['superadmin','cliente_admin_taller']);
 
@@ -180,5 +182,5 @@ async function cargarVehiculos() {
         { key: 'visitas', label: 'Visitas' }
     ], vehiculos);
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

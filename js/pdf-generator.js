@@ -1,6 +1,6 @@
 // js/pdf-generator.js
 import { supabase } from './supabase-config.js';
-import { formatearMoneda, formatearFecha, numeroALetras } from './utils.js';
+import { formatearMoneda, formatearFecha } from './utils.js';
 
 // Usaremos jsPDF y jsPDF-AutoTable
 // Cargar desde CDN en el HTML: 
@@ -8,6 +8,82 @@ import { formatearMoneda, formatearFecha, numeroALetras } from './utils.js';
 // <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
 const { jsPDF } = window.jspdf;
+
+function numeroALetras(numero) {
+    const unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+    const decenas = ['', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+    const especiales = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+    const centenas = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+    if (numero === 0) return 'CERO PESOS CON 00/100';
+    if (numero === 100) return 'CIEN PESOS CON 00/100';
+
+    const partes = numero.toFixed(2).split('.');
+    const entero = parseInt(partes[0]);
+    const decimal = parseInt(partes[1]);
+
+    let letras = '';
+
+    // Millones
+    if (entero >= 1000000) {
+        const millones = Math.floor(entero / 1000000);
+        if (millones === 1) {
+            letras += 'UN MILLÓN ';
+        } else {
+            letras += convertirGrupo(millones) + ' MILLONES ';
+        }
+    }
+
+    // Miles
+    const resto = entero % 1000000;
+    if (resto >= 1000) {
+        const miles = Math.floor(resto / 1000);
+        if (miles === 1) {
+            letras += 'MIL ';
+        } else {
+            letras += convertirGrupo(miles) + ' MIL ';
+        }
+    }
+
+    // Centenas
+    const ultimos = entero % 1000;
+    if (ultimos > 0) {
+        letras += convertirGrupo(ultimos);
+    }
+
+    letras = letras.trim() + ' PESOS CON ' + decimal.toString().padStart(2, '0') + '/100';
+
+    return letras;
+
+    function convertirGrupo(n) {
+        if (n === 0) return '';
+        
+        let result = '';
+        const c = Math.floor(n / 100);
+        
+        if (c > 0) {
+            if (n === 100) return 'CIEN';
+            result += centenas[c] + ' ';
+        }
+        
+        const du = n % 100;
+        if (du >= 10 && du < 20) {
+            result += especiales[du - 10];
+        } else {
+            const d = Math.floor(du / 10);
+            const u = du % 10;
+            
+            if (d > 0) {
+                result += decenas[d];
+                if (u > 0) result += ' Y ' + unidades[u];
+            } else if (u > 0) {
+                result += unidades[u];
+            }
+        }
+        
+        return result.trim();
+    }
+}
 
 // ============================================
 // GENERAR PDF DE COTIZACIÓN

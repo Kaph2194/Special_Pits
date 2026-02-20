@@ -5,15 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Portal - Special Car</title>
     <link rel="stylesheet" href="css/styles.css">
-    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
+    <header class="header" style="background:rgb(29, 3, 145);box-shadow:0 2px 4px rgb(243, 243, 243);position:sticky;top:0;z-index:100;">
     <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
+        <div style="font-size:1.25rem;font-weight:700;color:rgb(243, 243, 243);">
              Dashboard Cliente
         </div>
         <button onclick="history.back()" class="btn btn-secondary">
             ← Volver
         </button>
     </div>
+    </header>
+    <header class="header">
+    <div class="header-content">
+        <div class="logo">Special Car - Dashboard</div>
+        <nav style="display:flex;gap:1rem;align-items:center;">
+            <button onclick="abrirBusquedaGlobal()" class="btn btn-secondary" 
+                    style="padding:.5rem 1rem;">
+                🔍 Buscar (Ctrl+K)
+            </button>
+            <button onclick="history.back()" class="btn btn-secondary">
+                ← Volver
+            </button>
+        </nav>
+        </div>
     </header>
     <style>
         .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
@@ -55,6 +69,11 @@
             box-shadow:0 2px 4px rgba(0,0,0,.08);
         }
     </style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script> 
+    <script type="module" src="js/cliente-dashboard.js"></script>
+
 </head>
 <body>
 <div class="layout">
@@ -70,12 +89,17 @@
             <a href="#" onclick="cambiarSeccion('facturas',this)">💰 Facturas</a>
             <a href="#" onclick="cambiarSeccion('cotizaciones',this)">📋 Cotizaciones</a>
         </nav>
-        <div class="sidebar-footer">
-            <p id="nombreUsuario">...</p>
-            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
-            🚪 Salir
-            </button>
-        </div>
+            <div class="sidebar-footer">
+                <p id="nombreUsuario" style="font-size:.875rem;margin-bottom:.5rem;color:white;">...</p>
+                <button onclick="mostrarModalCambiarPassword()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;margin-bottom:.5rem;">
+                    🔑 Cambiar Contraseña
+                </button>
+                <button onclick="cerrarSesion()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;">
+                    🚪 Salir
+                </button>
+            </div>
     </aside>
 
     <main class="main">

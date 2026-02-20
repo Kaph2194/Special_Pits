@@ -3,6 +3,8 @@ import { supabase } from './supabase-config.js';
 import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { mostrarNotificacion, formatearMoneda, formatearFecha, formatearFechaHora } from './utils.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['cliente_final']);
 
@@ -558,6 +560,6 @@ async function cargarCotizaciones() {
 window.descargarFactura = (facturaId) => {
     mostrarNotificacion('Descarga de factura - Por implementar con SIIGO', 'info');
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarModal = () => document.getElementById('modalVehiculo').classList.remove('active');
 window.cerrarSesion = () => auth.logout();

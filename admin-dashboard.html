@@ -5,16 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard SuperAdmin - Special Car</title>
     <link rel="stylesheet" href="css/styles.css">
-    <header class="header" style="background:rgb(29, 3, 145);box-shadow:0 2px 4px rgb(243, 243, 243);position:sticky;top:0;z-index:100;">
-    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:1.25rem;font-weight:700;color:rgb(243, 243, 243);">
-             Dashboard
+    <header class="header" style="background:linear-gradient(220deg, #27367C 0%, #156082 100%);box-shadow:0 2px 4px rgb(243, 243, 243);position:sticky;top:0;z-index:100;">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+        <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.4rem;font-weight:700;color:rgb(243, 243, 243);">
+             SPECIAL CAR - PANEL DE ADMINISTRACIÓN
+             
         </div>
-        <button onclick="history.back()" class="btn btn-secondary">
+        <button onclick="history.back()" class="btn btn-secondary" style="align-self: center;">
             ← Volver
         </button>
+        <nav style="display:flex;gap:1rem;align-items:center;">
+        <button onclick="abrirBusquedaGlobal()" class="btn btn-secondary" 
+                    style="padding:.5rem 1rem;">
+                🔍 Buscar
+        </button>
     </div>
-    </header>
+</header>
     <style>
         .layout { 
             display: grid; 
@@ -223,17 +230,32 @@
             background:white; padding:1.5rem; border-radius:.75rem;
             box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:center;
         }
+        .logo {
+                width: 150px; /* Ajusta el tamaño a tu gusto */
+                height: auto;
+                display: block;
+                margin: 10px auto; /* Lo centra horizontalmente */
+                filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.397)); /* Le da un toque de profundidad */
+         }
     </style>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script type="module" src="js/admin-dashboard.js"></script>
+
 </head>
 <body>
     <div class="layout">
         <aside class="sidebar">
             <div style="text-align:center; margin-bottom:2rem;">
-                <div style="font-size:2rem;">⚙️</div>
+                <img src="assets/logo.jpg" alt="Logo Special Car" class="logo">
                 <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
                 <small style="color:rgba(255,255,255,.6);" id="rolUsuario">SuperAdmin</small>
+                <div style="border-top:1px solid rgba(255,255,255,.2);margin:1rem 0;"></div>
+                <a href="configuracion.html">
+                    ⚙️ Configuración del Sistema
+                </a>
             </div>
-            
             <nav>
                 <a href="#" class="active" onclick="cambiarSeccion('dashboard',this);return false;">
                     📊 Dashboard
@@ -281,7 +303,12 @@
             
             <div class="sidebar-footer">
                 <p id="nombreUsuario" style="font-size:.875rem;margin-bottom:.5rem;color:white;">...</p>
-                <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;padding:.5rem;font-size:.875rem;">
+                <button onclick="mostrarModalCambiarPassword()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;margin-bottom:.5rem;">
+                    🔑 Cambiar Contraseña
+                </button>
+                <button onclick="cerrarSesion()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;">
                     🚪 Salir
                 </button>
             </div>
@@ -438,7 +465,7 @@
 
                 <div id="tablaPermisos"></div>
             </section>
-
+            
             <!-- AUDITORÍA -->
             <section id="auditoria" class="section">
                 <h1>📋 Auditoría de Acciones</h1>

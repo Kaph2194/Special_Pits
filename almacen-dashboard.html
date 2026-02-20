@@ -5,17 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Almacén - Special Car</title>
     <link rel="stylesheet" href="css/styles.css">
-    <header class="header" style="background:white;box-shadow:0 2px 4px rgba(0,0,0,.1);position:sticky;top:0;z-index:100;">
-    <div style="max-width:1400px;margin:0 auto;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:1.25rem;font-weight:700;color:var(--primary);">
-             Dashboard Almacen
-        </div>
-        <button onclick="history.back()" class="btn btn-secondary">
-            ← Volver
-        </button>
-    </div>
-    </header>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
+        .layout { 
+            display: grid; 
+            grid-template-columns: 240px 1fr; 
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar { 
+            background: var(--gray-900); 
+            color: white; 
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow-y: auto;
+        }
+        .main { 
+            background: var(--gray-50); 
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        .section { 
+            display: none; 
+        }
+        .section.active { 
+            display: block; 
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
         .layout { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
         .sidebar { background:var(--gray-900); color:white; padding:1.5rem 1rem; }
         .sidebar nav a {
@@ -50,16 +73,48 @@
         .stock-bajo { background:#fee2e2; }
         .stock-medio { background:#fef3c7; }
         .stock-bueno { background:#d1fae5; }
+        .alerta-stock {
+            background:#fee2e2; padding:.75rem; border-radius:.5rem; margin-bottom:.75rem;
+        }
+        .alerta-stock.warning {
+             background:#fef3c7; border-left:4px solid var(--warning);
+        }
+        .alerta-stock.danger {
+             background:#fee2e2; border-left:4px solid var(--danger);
+         }
+         .alerta-stock h3 {
+             margin:0; font-size:1rem; color:var(--danger);
+         }
+         .alerta-stock p {
+             margin:0; font-size:.875rem; color:var(--gray-700);
+         }
+         .card {
+                background:white; padding:1.5rem; border-radius:.75rem;
+                box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:center;
+            }
+        .logo {
+                    width: 150px; /* Ajusta el tamaño a tu gusto */
+                    height: auto;
+                    display: block;
+                    margin: 10px auto; /* Lo centra horizontalmente */
+                    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.397)); /* Le da un toque de profundidad */
+             }
+            .form-grid {
+                display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem;
+            }
     </style>
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div style="text-align:center; margin-bottom:2rem;">
-            <div style="font-size:2rem;">📦</div>
+            <img src="assets/logo.jpg" alt="Logo Special Pits" class="logo">
             <h3 style="color:white; margin:.5rem 0 0;">Special Car</h3>
             <small style="color:rgba(255,255,255,.6);" id="rolUsuario">Jefe de Almacén</small>
         </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h2>📦 Inventario de Repuestos</h2>
+            </div>
         <nav>
             <a href="#" class="active" onclick="cambiarSeccion('dashboard',this)">📊 Dashboard</a>
             <a href="#" onclick="cambiarSeccion('repuestos',this)">🔩 Repuestos</a>
@@ -70,12 +125,17 @@
             <a href="cuentas-por-pagar.html">💳 Compras/CxP</a>
             <a href="servicios-config.html">⚙️ Configurar Servicios</a>
         </nav>
-        <div class="sidebar-footer">
-            <p id="nombreUsuario">...</p>
-            <button onclick="cerrarSesion()" class="btn btn-secondary" style="width:100%;">
-            🚪 Salir
-            </button>
-        </div>
+            <div class="sidebar-footer">
+                <p id="nombreUsuario" style="font-size:.875rem;margin-bottom:.5rem;color:white;">...</p>
+                <button onclick="mostrarModalCambiarPassword()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;margin-bottom:.5rem;">
+                    🔑 Cambiar Contraseña
+                </button>
+                <button onclick="cerrarSesion()" class="btn btn-secondary" 
+                        style="width:100%;padding:.5rem;font-size:.875rem;">
+                    🚪 Salir
+                </button>
+            </div>
     </aside>
 
     <main class="main">
@@ -109,33 +169,41 @@
         </section>
 
         <!-- REPUESTOS -->
-        <section id="repuestos" class="section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-                <h1>🔩 Gestión de Repuestos</h1>
-                <button onclick="abrirModalRepuesto()" class="btn btn-primary">
-                    + Nuevo Repuesto
-                </button>
-            </div>
-
-            <div class="card" style="margin-bottom:1rem;">
-                <div style="display:flex;gap:1rem;">
-                    <input type="text" id="buscarRepuesto" class="form-control"
-                           placeholder="Buscar por código, nombre..."
-                           oninput="filtrarRepuestos()" style="flex:1;">
-                    <select id="filtroCategoria" class="form-control" onchange="filtrarRepuestos()">
-                        <option value="">Todas las categorías</option>
-                        <option value="lubricantes">Lubricantes</option>
-                        <option value="filtros">Filtros</option>
-                        <option value="frenos">Frenos</option>
-                        <option value="suspension">Suspensión</option>
-                        <option value="electricos">Eléctricos</option>
-                        <option value="motor">Motor</option>
-                    </select>
+            <section id="repuestos" class="section">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h1>📦 Gestión de Repuestos</h1>
+                    <div style="display:flex;gap:.75rem;">
+                        <button onclick="exportarRepuestos()" class="btn btn-success">
+                            📊 Exportar a Excel
+                        </button>
+                        <button onclick="abrirModalRepuesto()" class="btn btn-primary">
+                            + Nuevo Repuesto
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div id="tablaRepuestos"></div>
-        </section>
+                <div class="card" style="margin-bottom:1rem;">
+                    <div style="display:flex;gap:1rem;">
+                        <input type="text" id="buscarRepuesto" class="form-control"
+                            placeholder="Buscar por código, nombre..."
+                            oninput="filtrarRepuestos()" style="flex:1;">
+                        <select id="filtroCategoria" class="form-control" onchange="filtrarRepuestos()">
+                            <option value="">Todas las categorías</option>
+                            <option value="lubricantes">Lubricantes</option>
+                            <option value="filtros">Filtros</option>
+                            <option value="frenos">Frenos</option>
+                            <option value="suspension">Suspensión</option>
+                            <option value="electricos">Eléctricos</option>
+                            <option value="motor">Motor</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tablaRepuestos">
+                    <p style="color:var(--gray-700);padding:2rem;text-align:center;">Cargando repuestos...</p>
+                </div>
+            </section>
 
         <!-- SERVICIOS -->
         <section id="servicios" class="section">
@@ -229,7 +297,6 @@
         </form>
     </div>
 </div>
-
 <script type="module" src="js/almacen-dashboard.js"></script>
 </body>
 </html>

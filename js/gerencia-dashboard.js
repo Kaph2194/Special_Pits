@@ -3,6 +3,8 @@ import { supabase } from './supabase-config.js';
 import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { formatearMoneda, formatearFecha } from './utils.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['superadmin','cliente_gerencia']);
 
@@ -345,5 +347,5 @@ async function cargarVistaRecursos() {
         { key: 'telefono', label: 'Teléfono' }
     ], usuariosConData);
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

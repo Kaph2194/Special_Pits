@@ -3,6 +3,8 @@ import { supabase } from './supabase-config.js';
 import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { mostrarNotificacion, formatearMoneda, formatearFecha } from './utils.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['mecanico']);
 
@@ -432,4 +434,5 @@ window.buscarHistorialVehiculo = async function() {
         mostrarNotificacion('Error buscando vehículo', 'error');
     }
 }
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

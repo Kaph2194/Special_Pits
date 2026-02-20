@@ -5,6 +5,8 @@ import { auth } from './auth-system.js';
 import { mostrarNotificacion, formatearMoneda, formatearFecha } from './utils.js';
 import { siigoService } from './siigo-service.js';
 import { whatsappService } from './whatsapp-business.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['superadmin','cajero']);
 
@@ -535,5 +537,5 @@ window.cambiarSeccion = function(seccion, el) {
     document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
     if (el) el.classList.add('active');
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

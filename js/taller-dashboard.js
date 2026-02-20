@@ -4,6 +4,9 @@ import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { mostrarNotificacion, formatearFecha, formatearMoneda, formatearFechaHora } from './utils.js';
 import { whatsappService } from './whatsapp-business.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { PrintManager } from './print-manager.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['superadmin', 'jefe_taller']);
 
@@ -207,7 +210,7 @@ window.verHistorialVehiculo = function(vehiculoId) {
 window.asignarMecanico = async function(otId) {
     const { data: mecanicos } = await supabase
         .from('usuarios')
-        .select('id, nombre')
+        .select('id, nombre, telefono, email')
         .eq('rol', 'mecanico')
         .eq('activo', true);
 
@@ -216,30 +219,91 @@ window.asignarMecanico = async function(otId) {
         return;
     }
 
-    const mecanicoId = prompt(
-        'Seleccione mecánico:\n' + 
-        mecanicos.map((m, i) => `${i + 1}. ${m.nombre}`).join('\n') +
-        '\n\nIngrese el número del mecánico:'
-    );
+    // Obtener carga de trabajo de cada mecánico
+    const { data: otsActivas } = await supabase
+        .from('ordenes_trabajo')
+        .select('mecanico_asignado_id')
+        .in('estado', ['pendiente', 'en_proceso']);
 
-    if (!mecanicoId) return;
+    const cargaTrabajo = {};
+    (otsActivas || []).forEach(ot => {
+        const mecId = ot.mecanico_asignado_id;
+        if (mecId) {
+            cargaTrabajo[mecId] = (cargaTrabajo[mecId] || 0) + 1;
+        }
+    });
 
-    const indice = parseInt(mecanicoId) - 1;
-    if (indice < 0 || indice >= mecanicos.length) {
-        mostrarNotificacion('⚠️ Selección inválida', 'warning');
-        return;
-    }
+    const modal = `
+        <div class="modal" style="display:flex;" id="modalAsignarMecanico">
+            <div class="modal-content" style="max-width:600px;">
+                <h2>👷 Asignar Mecánico a OT</h2>
+                
+                <div class="card" style="margin-bottom:1.5rem;">
+                    <p style="margin:0;color:var(--gray-700);">
+                        Seleccione el mecánico que realizará este trabajo:
+                    </p>
+                </div>
 
+                <div style="display:flex;flex-direction:column;gap:1rem;">
+                    ${mecanicos.map(m => `
+                        <div class="card" onclick="seleccionarMecanico(${otId}, ${m.id})" 
+                             style="cursor:pointer;transition:all .3s;border:2px solid transparent;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <strong style="font-size:1.1rem;">${m.nombre}</strong><br>
+                                    <small style="color:var(--gray-700);">
+                                        📧 ${m.email || 'Sin email'}<br>
+                                        📞 ${m.telefono || 'Sin teléfono'}
+                                    </small>
+                                </div>
+                                <div style="text-align:center;">
+                                    <div style="font-size:2rem;font-weight:700;color:var(--primary);">
+                                        ${cargaTrabajo[m.id] || 0}
+                                    </div>
+                                    <small style="color:var(--gray-700);">OTs activas</small>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <button onclick="cerrarModalAsignarMecanico()" class="btn btn-secondary" 
+                        style="width:100%;margin-top:1rem;">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+
+    // Agregar hover effect
+    document.querySelectorAll('#modalAsignarMecanico .card[onclick]').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.borderColor = 'var(--primary)';
+            this.style.background = 'var(--gray-50)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.borderColor = 'transparent';
+            this.style.background = 'white';
+        });
+    });
+}
+
+window.seleccionarMecanico = async function(otId, mecanicoId) {
     try {
         await supabase
             .from('ordenes_trabajo')
             .update({ 
-                mecanico_asignado_id: mecanicos[indice].id,
+                mecanico_asignado_id: mecanicoId,
                 estado: 'en_proceso'
             })
             .eq('id', otId);
 
+        await auth.registrarAccion('asignar_mecanico', 'ordenes_trabajo', otId);
         mostrarNotificacion('✅ Mecánico asignado correctamente', 'success');
+        
+        cerrarModalAsignarMecanico();
         await cargarMetricas();
         await cargarTodasLasOTs();
     } catch (error) {
@@ -247,10 +311,245 @@ window.asignarMecanico = async function(otId) {
     }
 }
 
-window.verDetalleOT = function(otId) {
-    mostrarNotificacion('Detalle de OT - Por implementar', 'info');
+window.cerrarModalAsignarMecanico = () => {
+    document.getElementById('modalAsignarMecanico')?.remove();
 }
 
+
+window.verDetalleOT = async function(otId) {
+    try {
+        // Obtener OT completa
+        const { data: ot } = await supabase
+            .from('v_ordenes_trabajo_completas')
+            .select('*')
+            .eq('id', otId)
+            .single();
+
+        if (!ot) return;
+
+        // Obtener repuestos
+        const { data: repuestos } = await supabase
+            .from('v_repuestos_utilizados_ot')
+            .select('*')
+            .eq('ot_id', otId);
+
+        // Obtener servicios
+        const { data: servicios } = await supabase
+            .from('v_servicios_realizados_ot')
+            .select('*')
+            .eq('ot_id', otId);
+
+        // Obtener mano de obra
+        const { data: manoObra } = await supabase
+            .from('v_mano_obra_ot')
+            .select('*')
+            .eq('ot_id', otId);
+
+        // Obtener solicitudes
+        const { data: solicitudes } = await supabase
+            .from('solicitudes_modificacion')
+            .select('*, usuarios!solicitante_id(nombre)')
+            .eq('ot_id', otId)
+            .order('created_at', { ascending: false });
+
+        const modal = `
+            <div class="modal" style="display:flex;" onclick="if(event.target===this) this.remove()">
+                <div class="modal-content" style="max-width:1000px;max-height:90vh;overflow-y:auto;">
+                    <h2>🔧 Detalle de Orden de Trabajo</h2>
+                    
+                    <!-- INFORMACIÓN GENERAL -->
+                    <div class="card" style="margin-bottom:1rem;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+                            <div>
+                                <h3>${ot.numero_ot}</h3>
+                                <span class="badge badge-${
+                                    ot.estado === 'pendiente' ? 'orange' :
+                                    ot.estado === 'en_proceso' ? 'blue' : 'green'
+                                }">${ot.estado}</span>
+                                ${ot.prioridad ? `<span class="badge badge-${
+                                    ot.prioridad === 'urgente' ? 'danger' : 'warning'
+                                }" style="margin-left:.5rem;">${ot.prioridad}</span>` : ''}
+                                
+                                <div style="margin-top:1rem;">
+                                    <strong>Cliente:</strong> ${ot.cliente_nombre}<br>
+                                    <strong>Vehículo:</strong> ${ot.vehiculo_placa} - ${ot.vehiculo_marca || ''} ${ot.vehiculo_linea || ''}<br>
+                                    <strong>Ingreso:</strong> ${formatearFecha(ot.fecha_ingreso)}<br>
+                                    ${ot.fecha_compromiso ? `<strong>Compromiso:</strong> ${formatearFecha(ot.fecha_compromiso)}<br>` : ''}
+                                    ${ot.mecanico_nombre ? `<strong>Mecánico:</strong> ${ot.mecanico_nombre}<br>` : ''}
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:2.5rem;font-weight:700;color:var(--success);">
+                                    ${formatearMoneda(ot.total)}
+                                </div>
+                                <small style="color:var(--gray-700);">Total de la OT</small>
+                                
+                                <div style="margin-top:1rem;text-align:left;">
+                                    <strong>KM Ingreso:</strong> ${ot.kilometraje_ingreso?.toLocaleString() || 'N/A'}<br>
+                                    ${ot.kilometraje_salida ? `<strong>KM Salida:</strong> ${ot.kilometraje_salida.toLocaleString()}<br>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        ${ot.observaciones_ingreso ? `
+                            <div style="margin-top:1rem;padding:1rem;background:var(--gray-50);border-radius:.5rem;">
+                                <strong>Observaciones de Ingreso:</strong><br>
+                                ${ot.observaciones_ingreso}
+                            </div>
+                        ` : ''}
+
+                        ${ot.diagnostico ? `
+                            <div style="margin-top:1rem;padding:1rem;background:#dbeafe;border-radius:.5rem;">
+                                <strong>🔍 Diagnóstico:</strong><br>
+                                ${ot.diagnostico}
+                            </div>
+                        ` : ''}
+
+                        ${ot.recomendaciones ? `
+                            <div style="margin-top:1rem;padding:1rem;background:#fef3c7;border-radius:.5rem;">
+                                <strong>💡 Recomendaciones:</strong><br>
+                                ${ot.recomendaciones}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- REPUESTOS -->
+                    ${repuestos && repuestos.length > 0 ? `
+                        <div class="card" style="margin-bottom:1rem;">
+                            <h3>🔩 Repuestos Utilizados</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Repuesto</th>
+                                        <th>Proveedor</th>
+                                        <th>Cantidad</th>
+                                        <th>P. Unit</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${repuestos.map(r => `
+                                        <tr>
+                                            <td>${r.repuesto_codigo}</td>
+                                            <td>${r.repuesto_nombre}</td>
+                                            <td>${r.proveedor_nombre || 'N/A'}</td>
+                                            <td>${r.cantidad}</td>
+                                            <td>${formatearMoneda(r.precio_unitario)}</td>
+                                            <td>${formatearMoneda(r.total)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : ''}
+
+                    <!-- SERVICIOS -->
+                    ${servicios && servicios.length > 0 ? `
+                        <div class="card" style="margin-bottom:1rem;">
+                            <h3>⚙️ Servicios Realizados</h3>
+                            ${servicios.map(s => `
+                                <div style="padding:.75rem;background:var(--gray-50);border-radius:.5rem;margin-bottom:.5rem;">
+                                    <strong>${s.servicio_nombre}</strong><br>
+                                    <small>${s.servicio_descripcion || ''}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <!-- MANO DE OBRA -->
+                    ${manoObra && manoObra.length > 0 ? `
+                        <div class="card" style="margin-bottom:1rem;">
+                            <h3>👷 Mano de Obra</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th>Horas</th>
+                                        <th>Valor/Hora</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${manoObra.map(mo => `
+                                        <tr>
+                                            <td>${mo.mo_nombre}</td>
+                                            <td>${mo.horas}</td>
+                                            <td>${formatearMoneda(mo.valor_hora)}</td>
+                                            <td>${formatearMoneda(mo.total)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : ''}
+
+                    <!-- SOLICITUDES -->
+                    ${solicitudes && solicitudes.length > 0 ? `
+                        <div class="card">
+                            <h3>📝 Solicitudes de Modificación</h3>
+                            ${solicitudes.map(s => `
+                                <div style="padding:.75rem;border-bottom:1px solid var(--gray-200);">
+                                    <div style="display:flex;justify-content:space-between;align-items:start;">
+                                        <div>
+                                            <strong>${s.tipo_solicitud}</strong>
+                                            <span class="badge badge-${
+                                                s.estado === 'pendiente' ? 'orange' :
+                                                s.estado === 'aprobada' ? 'green' : 'danger'
+                                            }" style="margin-left:.5rem;">${s.estado}</span><br>
+                                            <small>Por: ${s.usuarios?.nombre || 'N/A'}</small><br>
+                                            <p style="margin:.5rem 0;">${s.descripcion}</p>
+                                        </div>
+                                        <small>${formatearFechaHora(s.created_at)}</small>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <button onclick="this.closest('.modal').remove()" class="btn btn-secondary" 
+                            style="width:100%;margin-top:1rem;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modal);
+
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarNotificacion('Error cargando detalle de OT', 'error');
+    }
+    <button onclick="imprimirOT(${otId})" class="btn btn-primary" 
+        style="width:100%;margin-top:1rem;">
+        🖨️ Imprimir Orden de Trabajo
+    </button>
+}
+window.imprimirOT = async function(otId) {
+    const { data: ot } = await supabase
+        .from('v_ordenes_trabajo_completas')
+        .select('*')
+        .eq('id', otId)
+        .single();
+
+    const { data: repuestos } = await supabase
+        .from('v_repuestos_utilizados_ot')
+        .select('*')
+        .eq('ot_id', otId);
+
+    const { data: servicios } = await supabase
+        .from('v_servicios_realizados_ot')
+        .select('*')
+        .eq('ot_id', otId);
+
+    const { data: manoObra } = await supabase
+        .from('v_mano_obra_ot')
+        .select('*')
+        .eq('ot_id', otId);
+
+    PrintManager.imprimirOT(ot, repuestos || [], servicios || [], manoObra || []);
+}
 // ============================================
 // COTIZACIONES
 // ============================================
@@ -499,5 +798,5 @@ window.cambiarSeccion = function(seccion, el) {
     if (seccion === 'cotizaciones') cargarCotizaciones();
     if (seccion === 'solicitudes') cargarSolicitudes();
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

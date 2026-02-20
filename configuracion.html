@@ -38,11 +38,6 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        .form-control:disabled {
-            background-color: #f5f5f5;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
         .modal {
             display: none;
             position: fixed;
@@ -66,7 +61,6 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
         .item-row {
             display: grid;
@@ -77,7 +71,6 @@
             border-radius: 0.5rem;
             margin-bottom: 0.5rem;
             align-items: center;
-            border: 1px solid var(--gray-200);
         }
         .item-row strong {
             color: var(--gray-900);
@@ -86,89 +79,42 @@
             color: var(--gray-700);
         }
         .search-result {
-            padding: 1rem;
-            border: 2px solid var(--gray-200);
+            padding: 0.75rem;
+            border: 1px solid var(--gray-200);
             border-radius: 0.5rem;
             margin-bottom: 0.5rem;
             cursor: pointer;
             transition: all 0.2s;
-            background: white;
         }
         .search-result:hover {
             background: var(--gray-50);
             border-color: var(--primary);
-            transform: translateX(4px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .search-result.selected {
-            background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+            background: var(--primary);
             color: white;
             border-color: var(--primary);
         }
-        .search-result.selected small {
-            color: rgba(255,255,255,0.9);
-        }
         .badge-margen {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            padding: 0.25rem 0.5rem;
+            background: var(--warning);
             color: white;
-            border-radius: 1rem;
+            border-radius: 0.25rem;
             font-size: 0.75rem;
-            font-weight: 700;
             margin-left: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        #resultadosCliente > div,
-        #resultadosVehiculo > div {
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .item-row {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-            .item-row > div:last-child {
-                grid-column: 1;
-                text-align: center;
-            }
-            .modal-content {
-                width: 95%;
-                padding: 1rem;
-            }
         }
     </style>
 </head>
 <body>
-            <header class="header" style="background:linear-gradient(220deg, #27367C 0%, #156082 100%); box-shadow:0 2px 4px rgb(243, 243, 243); position:sticky; top:0; z-index:100;">
-                <div style="max-width:1400px; margin:0 auto; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;">
-                    
-                    <div style="font-size:1.4rem; font-weight:700; color:rgb(243, 243, 243);">
-                        SPECIAL PITS - NUEVA COTIZACIÓN
-                    </div>
-
-                    <nav>
-                        <button onclick="history.back()" class="btn btn-secondary">← Volver</button>
-                    </nav>
-                    
-                </div>
-            </header>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Car - Nueva Cotización</div>
+            <nav>
+                <button onclick="history.back()" class="btn btn-secondary">← Volver</button>
+            </nav>
+        </div>
+    </header>
 
     <div class="container">
         <h1>📋 Nueva Cotización</h1>
@@ -178,38 +124,38 @@
             <h2>Información General</h2>
             
             <!-- BÚSQUEDA DE CLIENTE -->
-            <div class="form-group" style="margin-bottom:1.5rem;">
-                <label>Cliente *</label>
+            <div class="form-group">
+                <label>Buscar Cliente *</label>
                 <input type="text" id="buscarCliente" class="form-control" 
-                       placeholder="🔍 Buscar por nombre, NIT, teléfono..."
+                       placeholder="Buscar por nombre, NIT, teléfono..."
                        oninput="buscarClienteInput()">
                 <input type="hidden" id="clienteIdSeleccionado">
                 <div id="resultadosCliente" style="margin-top:0.5rem;"></div>
             </div>
 
             <!-- INFO CLIENTE SELECCIONADO -->
-            <div id="infoClienteSeleccionado" style="display:none;margin-bottom:1.5rem;">
-                <div class="card" style="background:#e8f5e9;padding:1rem;border-left:4px solid #4caf50;">
+            <div id="infoClienteSeleccionado" style="display:none;margin-bottom:1rem;">
+                <div class="card" style="background:var(--gray-50);padding:1rem;">
                     <div style="display:flex;justify-content:space-between;align-items:start;">
                         <div>
-                            <strong style="font-size:1.1rem;" id="clienteNombre"></strong>
+                            <strong id="clienteNombre"></strong>
                             <span id="clienteMargen" class="badge-margen" style="display:none;"></span>
                             <br>
-                            <small style="color:var(--gray-700);" id="clienteNit"></small><br>
-                            <small style="color:var(--gray-700);" id="clienteTelefono"></small>
+                            <small id="clienteNit"></small><br>
+                            <small id="clienteTelefono"></small>
                         </div>
-                        <button onclick="limpiarCliente()" class="btn btn-secondary" style="padding:.5rem 1rem;">
-                            🔄 Cambiar
+                        <button onclick="limpiarCliente()" class="btn btn-secondary" style="padding:.5rem;">
+                            Cambiar
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- BÚSQUEDA DE VEHÍCULO -->
-            <div class="form-group" style="margin-bottom:1.5rem;">
-                <label>Vehículo *</label>
+            <div class="form-group">
+                <label>Buscar Vehículo *</label>
                 <input type="text" id="buscarVehiculo" class="form-control" 
-                       placeholder="Primero seleccione un cliente"
+                       placeholder="Buscar por placa, marca..."
                        oninput="buscarVehiculoInput()"
                        disabled>
                 <input type="hidden" id="vehiculoIdSeleccionado">
@@ -217,15 +163,15 @@
             </div>
 
             <!-- INFO VEHÍCULO SELECCIONADO -->
-            <div id="infoVehiculoSeleccionado" style="display:none;margin-bottom:1.5rem;">
-                <div class="card" style="background:#e3f2fd;padding:1rem;border-left:4px solid #2196f3;">
+            <div id="infoVehiculoSeleccionado" style="display:none;margin-bottom:1rem;">
+                <div class="card" style="background:var(--gray-50);padding:1rem;">
                     <div style="display:flex;justify-content:space-between;align-items:start;">
                         <div>
-                            <strong style="font-size:1.1rem;" id="vehiculoPlaca"></strong><br>
-                            <small style="color:var(--gray-700);" id="vehiculoInfo"></small>
+                            <strong id="vehiculoPlaca"></strong><br>
+                            <small id="vehiculoInfo"></small>
                         </div>
-                        <button onclick="limpiarVehiculo()" class="btn btn-secondary" style="padding:.5rem 1rem;">
-                            🔄 Cambiar
+                        <button onclick="limpiarVehiculo()" class="btn btn-secondary" style="padding:.5rem;">
+                            Cambiar
                         </button>
                     </div>
                 </div>
@@ -234,20 +180,18 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label>Fecha de Cotización</label>
-                    <input type="date" id="fechaCotizacion" class="form-control" readonly 
-                           style="background:#f5f5f5;">
+                    <input type="date" id="fechaCotizacion" class="form-control" readonly>
                 </div>
                 <div class="form-group">
                     <label>Válida hasta (7 días)</label>
-                    <input type="date" id="validaHasta" class="form-control" readonly
-                           style="background:#f5f5f5;">
+                    <input type="date" id="validaHasta" class="form-control" readonly>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Observaciones</label>
                 <textarea id="observacionesCotizacion" class="form-control" 
-                          rows="3" placeholder="Notas adicionales sobre esta cotización..."></textarea>
+                          rows="3" placeholder="Notas adicionales..."></textarea>
             </div>
         </div>
 
@@ -281,7 +225,7 @@
                 <div>
                     <h3>Totales</h3>
                     <p id="infoMargenAplicado" style="color:var(--warning);font-size:.875rem;display:none;">
-                        * Margen del cliente aplicado a los repuestos
+                        * Margen del cliente aplicado
                     </p>
                 </div>
                 <div style="text-align:right;">
@@ -361,36 +305,32 @@
 
     <!-- MODAL AGREGAR SERVICIO -->
     <div class="modal" id="modalAgregarServicio">
-    <div class="modal-content">
-        <h2>Agregar Servicio</h2>
-        <form id="formAgregarServicio">
-            <div class="form-group">
-                <label>Servicio *</label>
-                <select id="selectServicio" class="form-control" required>
-                    <option value="">Seleccionar servicio...</option>
-                </select>
-            </div>
+        <div class="modal-content">
+            <h2>Agregar Servicio</h2>
+            <form id="formAgregarServicio">
+                <div class="form-group">
+                    <label>Servicio *</label>
+                    <select id="selectServicio" class="form-control" required>
+                        <option value="">Seleccionar servicio...</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label>Precio Base *</label>
-                <input type="number" id="precioServicio" class="form-control" 
-                       min="0" step="1000" required 
-                       placeholder="Ingrese el precio base del servicio">
-                <small style="color:var(--gray-700);">
-                    El margen del cliente se aplicará automáticamente
-                </small>
-            </div>
+                <div class="form-group">
+                    <label>Precio *</label>
+                    <input type="number" id="precioServicio" class="form-control" 
+                           min="0" step="1000" required>
+                </div>
 
-            <div style="display:flex;gap:1rem;margin-top:1rem;">
-                <button type="submit" class="btn btn-primary" style="flex:1;">
-                    ✓ Agregar
-                </button>
-                <button type="button" onclick="cerrarModalServicio()" class="btn btn-secondary">
-                    Cancelar
-                </button>
-            </div>
-        </form>
-    </div>
+                <div style="display:flex;gap:1rem;margin-top:1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        ✓ Agregar
+                    </button>
+                    <button type="button" onclick="cerrarModalServicio()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL AGREGAR MANO DE OBRA -->

@@ -102,21 +102,29 @@ class AuthSystem {
     estaAutenticado() { return this.usuarioActual !== null; }
     esRol(rol) { return this.usuarioActual?.rol === rol; }
 
-    async registrarAccion(accion, modulo, registroId = null, detalles = null) {
-        if (!this.usuarioActual) return;
-        try {
-            await supabase.from('auditoria_acciones').insert({
-                usuario_id:  this.usuarioActual.id,
-                rol:         this.usuarioActual.rol,
-                accion,
-                modulo,
-                registro_id: registroId,
-                detalles
-            });
-        } catch(e) {
-            console.warn('Auditoría no guardada:', e.message);
+    async registrarAccion(accion, tabla, registroId = null, detalles = null) {
+    try {
+        if (!this.usuario) return;
+
+        const datos = {
+            usuario_id: this.usuario.id,
+            accion: accion,
+            tabla_nombre: tabla,  // ← CAMBIAR de 'tabla' a 'tabla_nombre'
+            registro_id: registroId,
+            detalles: detalles
+        };
+
+        const { error } = await supabase
+            .from('auditoria')
+            .insert(datos);
+
+        if (error) {
+            console.error('Error registrando auditoría:', error);
         }
+    } catch (error) {
+        console.error('Error en registrarAccion:', error);
     }
+}
 
     redirigirSegunRol() {
         if (!this.usuarioActual) {

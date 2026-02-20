@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Vehículos - Special Pits</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">Special Pits - Vehículos</div>
+            <nav>
+                <button onclick="history.back()" class="btn btn-secondary">← Volver</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+            <img src="assets/logo.jpg" alt="Logo Special Pits" class="logo">    
+            <button onclick="abrirModalVehiculo()" class="btn btn-primary">
+                + Nuevo Vehículo
+            </button>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+            <div style="display:flex;gap:1rem;">
+                <input type="text" id="buscarVehiculo" class="form-control" 
+                       placeholder="Buscar por placa, marca, cliente..."
+                       oninput="filtrarVehiculos()" style="flex:1;">
+                <select id="filtroCliente" class="form-control" onchange="filtrarVehiculos()">
+                    <option value="">Todos los clientes</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="tablaVehiculos"></div>
+    </div>
+
+    <!-- MODAL VEHÍCULO -->
+    <div class="modal" id="modalVehiculo">
+        <div class="modal-content" style="max-width:800px;">
+            <h2 id="tituloModalVehiculo">Nuevo Vehículo</h2>
+            <form id="formVehiculo">
+                <input type="hidden" id="vehiculoId">
+
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select id="vehiculoCliente" class="form-control" required>
+                        <option value="">Seleccionar cliente...</option>
+                    </select>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Placa *</label>
+                        <input type="text" id="vehiculoPlaca" class="form-control" 
+                               required maxlength="10" style="text-transform:uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Vehículo</label>
+                        <select id="vehiculoTipo" class="form-control">
+                            <option value="automovil">Automóvil</option>
+                            <option value="camioneta">Camioneta</option>
+                            <option value="moto">Moto</option>
+                            <option value="camion">Camión</option>
+                            <option value="bus">Bus</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="vehiculoMarca" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Línea</label>
+                        <input type="text" id="vehiculoLinea" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Modelo (Año)</label>
+                        <input type="number" id="vehiculoModelo" class="form-control" 
+                               min="1900" max="2099">
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="vehiculoColor" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>VIN/Chasis</label>
+                    <input type="text" id="vehiculoVin" class="form-control" maxlength="17">
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Kilometraje</label>
+                        <input type="number" id="vehiculoKilometraje" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Combustible</label>
+                        <select id="vehiculoCombustible" class="form-control">
+                            <option value="">N/A</option>
+                            <option value="gasolina">Gasolina</option>
+                            <option value="diesel">Diesel</option>
+                            <option value="electrico">Eléctrico</option>
+                            <option value="hibrido">Híbrido</option>
+                            <option value="gas">Gas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="vehiculoObservaciones" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        💾 Guardar Vehículo
+                    </button>
+                    <button type="button" onclick="cerrarModalVehiculo()" class="btn btn-secondary">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/vehiculos.js"></script>
+</body>
+</html>

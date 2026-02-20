@@ -3,6 +3,8 @@ import { supabase } from './supabase-config.js';
 import { DashboardBase } from './dashboards.js';
 import { auth } from './auth-system.js';
 import { formatearMoneda, formatearFecha } from './utils.js';
+import { mostrarModalCambiarPassword } from './cambiar-password.js';
+import { notificacionesRealtime, NotificacionesRealtime } from './notifications-realtime.js';
 
 const dash = new DashboardBase(['superadmin','cliente_financiero','cliente_gerencia']);
 
@@ -368,5 +370,5 @@ window.cambiarSeccion = function(seccion, el) {
             '<p style="color:var(--gray-700);padding:2rem;">Análisis de utilidad por OT - Por implementar</p>';
     }
 }
-
+window.mostrarModalCambiarPassword = mostrarModalCambiarPassword;
 window.cerrarSesion = () => auth.logout();

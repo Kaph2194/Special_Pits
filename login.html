@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Special Car</title>
+    <title>Login - Special PITS</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background:linear-gradient(220deg, #27367C 0%, #156082 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -28,6 +28,13 @@
         }
         .login-logo h1 { color: #667eea; font-size: 2.5rem; margin: 0; }
         .login-logo p  { color: #6b7280; margin: .5rem 0 0; }
+        .logo {
+                width: 150px; /* Ajusta el tamaño a tu gusto */
+                height: auto;
+                display: block;
+                margin: 10px auto; /* Lo centra horizontalmente */
+                filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.397)); /* Le da un toque de profundidad */
+         }
         .demo-btns { display: grid; gap: .5rem; margin-top: 1.5rem; }
         .demo-btn {
             padding: .6rem;
@@ -46,9 +53,9 @@
 <body>
 <div class="login-box">
     <div class="login-logo">
-        <h1>🚗</h1>
-        <h2 style="color:#667eea;margin:.5rem 0 0;">Special Car</h2>
-        <p>Sistema de Gestión de Taller</p>
+        <img src="assets/logo.jpg" alt="Logo Special Pits" class="logo">
+        <h2 style="color:#031258;margin:.5rem 0 0;"></h2>
+        <p style="font-size: 1.6rem; color: #052552;">Sistema de Gestión de Taller</p>
     </div>
 
     <div id="alerta"></div>
@@ -65,7 +72,7 @@
                placeholder="••••••••" autocomplete="current-password">
     </div>
 
-    <button id="btnLogin" class="btn btn-primary" style="width:100%;">
+    <button id="btnLogin" class="btn btn-primary" style="width:100%; background-color: #27367C; border-color: #031258;">
         Iniciar Sesión
     </button>
 
